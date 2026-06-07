@@ -11,29 +11,39 @@ import Link from "next/link";
 import type { Product } from "@/types/product";
 
 async function getFeaturedProducts(): Promise<Product[]> {
-  return db.product.findMany({
-    where: { active: true, featured: true },
-    include: {
-      category: true,
-      images: { orderBy: { position: "asc" } },
-      brands: { include: { brand: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 8,
-  }) as unknown as Product[];
+  try {
+    return await db.product.findMany({
+      where: { active: true, featured: true },
+      include: {
+        category: true,
+        images: { orderBy: { position: "asc" } },
+        brands: { include: { brand: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    }) as unknown as Product[];
+  } catch (e) {
+    console.error("getFeaturedProducts error:", e);
+    return [];
+  }
 }
 
 async function getLatestProducts(): Promise<Product[]> {
-  return db.product.findMany({
-    where: { active: true },
-    include: {
-      category: true,
-      images: { orderBy: { position: "asc" } },
-      brands: { include: { brand: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 8,
-  }) as unknown as Product[];
+  try {
+    return await db.product.findMany({
+      where: { active: true },
+      include: {
+        category: true,
+        images: { orderBy: { position: "asc" } },
+        brands: { include: { brand: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    }) as unknown as Product[];
+  } catch (e) {
+    console.error("getLatestProducts error:", e);
+    return [];
+  }
 }
 
 export default async function HomePage() {
