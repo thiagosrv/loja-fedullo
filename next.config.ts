@@ -10,7 +10,12 @@ const nextConfig: NextConfig = {
     ],
   },
   // Server Components can use Prisma with better-sqlite3
-  serverExternalPackages: ["better-sqlite3", "@prisma/adapter-better-sqlite3"],
+  serverExternalPackages: [
+    "better-sqlite3",
+    "@prisma/adapter-better-sqlite3",
+    "@prisma/adapter-libsql",
+    "@libsql/client",
+  ],
 };
 
 export default nextConfig;

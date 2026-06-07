@@ -10,20 +10,20 @@ const LIGHTS = [
   { top: 33.0, left: 29.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 0 },
   { top: 33.0, left: 71.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 0 },
   // Orange row 2
-  { top: 40.0, left: 29.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 10 },
-  { top: 40.0, left: 71.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 10 },
+  { top: 40.0, left: 29.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 6 },
+  { top: 40.0, left: 71.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 6 },
   // Orange row 3
-  { top: 47.0, left: 29.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 20 },
-  { top: 47.0, left: 71.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 20 },
+  { top: 47.0, left: 29.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 12 },
+  { top: 47.0, left: 71.0, color: "#f97316", shadow: "0 0 5px 2px #f97316, 0 0 10px 4px #ea580c33", threshold: 12 },
   // Green row 1
-  { top: 54.0, left: 29.0, color: "#22c55e", shadow: "0 0 5px 2px #22c55e, 0 0 10px 4px #16a34a33", threshold: 30 },
-  { top: 54.0, left: 71.0, color: "#22c55e", shadow: "0 0 5px 2px #22c55e, 0 0 10px 4px #16a34a33", threshold: 30 },
+  { top: 54.0, left: 29.0, color: "#22c55e", shadow: "0 0 5px 2px #22c55e, 0 0 10px 4px #16a34a33", threshold: 18 },
+  { top: 54.0, left: 71.0, color: "#22c55e", shadow: "0 0 5px 2px #22c55e, 0 0 10px 4px #16a34a33", threshold: 18 },
   // Green row 2
-  { top: 60.5, left: 29.0, color: "#22c55e", shadow: "0 0 5px 2px #22c55e, 0 0 10px 4px #16a34a33", threshold: 40 },
-  { top: 60.5, left: 71.0, color: "#22c55e", shadow: "0 0 5px 2px #22c55e, 0 0 10px 4px #16a34a33", threshold: 40 },
+  { top: 60.5, left: 29.0, color: "#22c55e", shadow: "0 0 5px 2px #22c55e, 0 0 10px 4px #16a34a33", threshold: 24 },
+  { top: 60.5, left: 71.0, color: "#22c55e", shadow: "0 0 5px 2px #22c55e, 0 0 10px 4px #16a34a33", threshold: 24 },
   // Red row
-  { top: 67.0, left: 29.0, color: "#dc2626", shadow: "0 0 5px 2px #dc2626, 0 0 10px 4px #b9191933", threshold: 60 },
-  { top: 67.0, left: 71.0, color: "#dc2626", shadow: "0 0 5px 2px #dc2626, 0 0 10px 4px #b9191933", threshold: 60 },
+  { top: 67.0, left: 29.0, color: "#dc2626", shadow: "0 0 5px 2px #dc2626, 0 0 10px 4px #b9191933", threshold: 35 },
+  { top: 67.0, left: 71.0, color: "#dc2626", shadow: "0 0 5px 2px #dc2626, 0 0 10px 4px #b9191933", threshold: 35 },
 ] as const;
 
 export function LoadingScreen() {
@@ -32,7 +32,7 @@ export function LoadingScreen() {
   const [gone, setGone] = useState(false);
   const rafRef = useRef<number>(0);
   const startRef = useRef<number>(0);
-  const DURATION = 5000; // 5 segundos
+  const DURATION = 3000; // 3 segundos
 
   useEffect(() => {
     startRef.current = performance.now();
