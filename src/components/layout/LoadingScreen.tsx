@@ -142,10 +142,10 @@ export function LoadingScreen() {
                   background:   on ? l.color : "rgba(0,0,0,0.3)",
                   boxShadow:    on
                     ? `
-                        0 0 ${size * 0.5}vw  ${size * 0.3}vw ${l.glow}FF,
-                        0 0 ${size * 1.5}vw  ${size * 0.8}vw ${l.glow}CC,
-                        0 0 ${size * 3.5}vw  ${size * 1.8}vw ${l.glow}77,
-                        0 0 ${size * 7}vw    ${size * 4}vw   ${l.glow}33
+                        0 0 ${size * 0.5}vw  ${size * 0.3}vw ${l.glow}E6,
+                        0 0 ${size * 1.5}vw  ${size * 0.8}vw ${l.glow}B8,
+                        0 0 ${size * 3.5}vw  ${size * 1.8}vw ${l.glow}6B,
+                        0 0 ${size * 7}vw    ${size * 4}vw   ${l.glow}2E
                       `
                     : "none",
                   opacity:      on ? 1 : 0.4,
