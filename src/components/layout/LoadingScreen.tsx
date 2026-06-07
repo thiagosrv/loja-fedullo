@@ -30,17 +30,18 @@ const LIGHTS = [
 ] as const;
 
 // ─── Timings (ms) ─────────────────────────────────────────────────────────────
-const FADE_START  = 1800;  // fade para preto começa
-const FADE_END    = 2250;  // totalmente preto
-const LOGO_IN     = 2300;  // logo aparece
-const LOGO_PEAK   = 2650;  // logo totalmente visível
-const LOGO_OUT    = 3200;  // logo começa a sumir
-const LOGO_GONE   = 3550;  // logo invisível
-const TV_START    = 3550;  // efeito TV começa
-const TV_END      = 4050;  // efeito TV termina → site abre
+const FADE_START   = 1800;   // fade para preto começa
+const FADE_END     = 2250;   // totalmente preto
+const LOGO_IN      = 2300;   // logo aparece
+const LOGO_PEAK    = 2650;   // logo totalmente visível
+const LOGO_OUT     = 3200;   // logo começa a sumir
+const LOGO_GONE    = 3550;   // logo invisível → smoke imediato
+const SMOKE_START  = 3550;   // efeito smoke começa
+const SMOKE_END    = 4380;   // smoke termina → site abre
 
-function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
-function clamp(t: number)   { return Math.max(0, Math.min(1, t)); }
+function easeOut(t: number)  { return 1 - Math.pow(1 - t, 3); }
+function easeOut2(t: number) { return 1 - Math.pow(1 - t, 2); } // mais suave
+function clamp(t: number)    { return Math.max(0, Math.min(1, t)); }
 
 export function LoadingScreen() {
   const [elapsed, setElapsed] = useState(0);
@@ -53,7 +54,7 @@ export function LoadingScreen() {
     const tick = (now: number) => {
       const ms = now - startRef.current;
       setElapsed(ms);
-      if (ms < TV_END + 60) rafRef.current = requestAnimationFrame(tick);
+      if (ms < SMOKE_END + 60) rafRef.current = requestAnimationFrame(tick);
       else setGone(true);
     };
     rafRef.current = requestAnimationFrame(tick);
@@ -62,170 +63,235 @@ export function LoadingScreen() {
 
   if (gone) return null;
 
-  // ── Overlay preto (fade) ──
+  // ── Overlay preto (fade imagem → preto) ──
   const fadeBlack = clamp((elapsed - FADE_START) / (FADE_END - FADE_START));
 
   // ── Logo ──
-  const logoIn  = easeOut(clamp((elapsed - LOGO_IN)  / (LOGO_PEAK - LOGO_IN)));
-  const logoOut = easeOut(clamp((elapsed - LOGO_OUT) / (LOGO_GONE - LOGO_OUT)));
+  const logoIn    = easeOut(clamp((elapsed - LOGO_IN)  / (LOGO_PEAK - LOGO_IN)));
+  const logoOut   = easeOut(clamp((elapsed - LOGO_OUT) / (LOGO_GONE - LOGO_OUT)));
   const logoAlpha = logoIn * (1 - logoOut);
 
-  // ── Efeito TV ──
-  const tvPct   = clamp((elapsed - TV_START) / (TV_END - TV_START));
-  const tvScale = 1 - easeOut(tvPct);
-  const tvGlow  = Math.sin(tvPct * Math.PI);
+  // ── Smoke premium ──────────────────────────────────────────────────────────
+  const smokeActive = elapsed >= SMOKE_START;
+  const smokePct    = clamp((elapsed - SMOKE_START) / (SMOKE_END - SMOKE_START));
+
+  // Curvas independentes para cada camada de smoke
+  const smokeMain = easeOut(smokePct);                              // dissolução principal
+  const wisp1     = easeOut2(clamp(smokePct * 1.25));              // wisp esq — rápido
+  const wisp2     = easeOut2(clamp((smokePct - 0.18) / 0.82));    // wisp dir — atrasado
+  const wisp3     = easeOut(clamp((smokePct - 0.06) / 0.74));     // bloom central
+
+  // Flash de exalação inicial (0→18% opacidade nos primeiros 8%, depois some)
+  const flashRaw   = smokePct < 0.08
+    ? smokePct / 0.08
+    : Math.max(0, 1 - (smokePct - 0.08) / 0.20);
+  const flashAlpha = flashRaw * 0.16;
+
+  // Opacidade, blur e scale do wrapper interno durante smoke
+  const innerOpacity   = smokeActive ? Math.max(0, 1 - smokeMain) : 1;
+  const innerBlur      = smokeActive ? smokeMain * 20            : 0;
+  const innerScale     = smokeActive ? 1 + smokeMain * 0.055     : 1;
+
+  // Opacidade dos wisps: sobe e desce (curva sino) — max nos 40%
+  const wispBell = (p: number) => Math.max(0, Math.sin(p * Math.PI));
 
   return (
     <div
       style={{
-        position:        "fixed",
-        inset:           0,
-        zIndex:          9999,
-        background:      "#000",
-        overflow:        "hidden",
-        transform:       elapsed >= TV_START ? `scaleY(${Math.max(tvScale, 0)})` : undefined,
-        transformOrigin: "center",
+        position:   "fixed",
+        inset:      0,
+        zIndex:     9999,
+        background: "#000",
+        overflow:   "hidden",
       }}
     >
-      {/* ══════════════════════════════════════════════
-          Container que cobre o viewport inteiro em
-          QUALQUER orientação mantendo proporção 3:2.
+      {/* ── Wrapper interno — recebe o smoke transform ── */}
+      <div
+        style={{
+          position:        "absolute",
+          inset:           0,
+          opacity:         innerOpacity,
+          filter:          innerBlur > 0.2 ? `blur(${innerBlur.toFixed(1)}px)` : undefined,
+          transform:       smokeActive ? `scale(${innerScale.toFixed(4)})` : undefined,
+          transformOrigin: "center center",
+          willChange:      smokeActive ? "opacity, transform, filter" : undefined,
+        }}
+      >
+        {/* ══════════════════════════════════════════════
+            Container cobre o viewport inteiro em qualquer
+            orientação mantendo a proporção 3:2 da imagem.
+        ══════════════════════════════════════════════ */}
+        {elapsed < FADE_END + 50 && (
+          <div
+            style={{
+              position:  "absolute",
+              top:       "50%",
+              left:      "50%",
+              transform: "translate(-50%, -50%)",
+              width:     "max(100vw, 150svh)",
+              height:    "max(100svh, 66.667vw)",
+            }}
+          >
+            {/* Foto do semáforo */}
+            <Image
+              src="/loading.png"
+              alt=""
+              fill
+              sizes="100vw"
+              style={{ objectFit: "fill" }}
+              priority
+            />
 
-          Landscape desktop (1920×1080):
-            width  = max(1920vw, 150×1080/100) = max(1920,1620) = 1920px ✓
-            height = max(1080, 66.67×1920/100) = max(1080,1280) = 1280px
-            → base é cortada pelo overflow:hidden da raiz
+            {/* ── Luzes do semáforo ── */}
+            {LIGHTS.map((l, i) => {
+              const on   = elapsed >= l.ms;
+              const age  = elapsed - l.ms;
+              const burst = on && age < 150 ? 1 + (1 - age / 150) * 0.8 : 1;
+              const BASE = 1.6;
+              const size = on ? BASE * burst : BASE * 0.6;
 
-          Portrait mobile (390×844):
-            width  = max(390, 150×844/100) = max(390,1266) = 1266px
-            height = max(844, 66.67×390/100) = max(844,260) = 844px ✓
-            → lados cortados
+              return (
+                <span
+                  key={i}
+                  style={{
+                    position:      "absolute",
+                    top:           `${l.top}%`,
+                    left:          `${l.left}%`,
+                    transform:     "translate(-50%, -50%)",
+                    display:       "block",
+                    width:         `${size}vw`,
+                    height:        `${size}vw`,
+                    borderRadius:  "50%",
+                    background:    on ? l.color : "rgba(0,0,0,0.3)",
+                    boxShadow:     on
+                      ? `
+                          0 0 ${size * 0.5}vw  ${size * 0.3}vw ${l.glow}E6,
+                          0 0 ${size * 1.5}vw  ${size * 0.8}vw ${l.glow}B8,
+                          0 0 ${size * 3.5}vw  ${size * 1.8}vw ${l.glow}6B,
+                          0 0 ${size * 7}vw    ${size * 4}vw   ${l.glow}2E
+                        `
+                      : "none",
+                    opacity:       on ? 1 : 0.4,
+                    transition:    on ? "none" : "opacity 0.1s",
+                    zIndex:        2,
+                    pointerEvents: "none",
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
 
-          Em ambos os casos as luzes em % do container
-          batem com os pixels originais da imagem 3:2.
-      ══════════════════════════════════════════════ */}
-      {elapsed < FADE_END + 50 && (
-        <div
-          style={{
-            position:  "absolute",
-            top:       "50%",
-            left:      "50%",
-            transform: "translate(-50%, -50%)",
-            // Garante cobertura total em portrait (mobile) e landscape (desktop)
-            width:  "max(100vw, 150svh)",
-            height: "max(100svh, 66.667vw)",
-          }}
-        >
-          {/* Foto do semáforo */}
-          <Image
-            src="/loading.png"
-            alt=""
-            fill
-            sizes="100vw"
-            style={{ objectFit: "fill" }}   // sem crop — container = ratio exato
-            priority
+        {/* ── Overlay fade para preto ── */}
+        {fadeBlack > 0 && (
+          <div
+            style={{
+              position:   "absolute",
+              inset:      0,
+              background: "#000",
+              opacity:    fadeBlack,
+              zIndex:     3,
+            }}
           />
+        )}
 
-          {/* ── Luzes do semáforo ── */}
-          {LIGHTS.map((l, i) => {
-            const on = elapsed >= l.ms;
-            // burst flash ao acender: size × 1.8 nos primeiros 150ms
-            const age   = elapsed - l.ms;
-            const burst = on && age < 150 ? 1 + (1 - age / 150) * 0.8 : 1;
+        {/* ── Logo Fedullo ── */}
+        {logoAlpha > 0.01 && (
+          <div
+            style={{
+              position:       "absolute",
+              inset:          0,
+              display:        "flex",
+              alignItems:     "center",
+              justifyContent: "center",
+              zIndex:         4,
+              opacity:        logoAlpha,
+            }}
+          >
+            <Image
+              src="/fedullo.png"
+              alt="Fedullo"
+              width={600}
+              height={350}
+              style={{ width: "clamp(280px, 58vw, 640px)", height: "auto" }}
+              priority
+            />
+          </div>
+        )}
 
-            // tamanho base em vw (proporcional ao container)
-            const BASE = 1.6;   // vw — ~24px no bulbo real
-            const size = on ? BASE * burst : BASE * 0.6;
-
-            return (
-              <span
-                key={i}
+        {/* ── Smoke: wisps + flash — dentro do wrapper (são afetados pelo blur) ── */}
+        {smokeActive && smokePct < 1 && (
+          <>
+            {/* Flash de exalação — puff rápido no início */}
+            {flashAlpha > 0.004 && (
+              <div
                 style={{
-                  position:     "absolute",
-                  top:          `${l.top}%`,
-                  left:         `${l.left}%`,
-                  transform:    "translate(-50%, -50%)",
-                  display:      "block",
-                  width:        `${size}vw`,
-                  height:       `${size}vw`,
-                  borderRadius: "50%",
-                  background:   on ? l.color : "rgba(0,0,0,0.3)",
-                  boxShadow:    on
-                    ? `
-                        0 0 ${size * 0.5}vw  ${size * 0.3}vw ${l.glow}E6,
-                        0 0 ${size * 1.5}vw  ${size * 0.8}vw ${l.glow}B8,
-                        0 0 ${size * 3.5}vw  ${size * 1.8}vw ${l.glow}6B,
-                        0 0 ${size * 7}vw    ${size * 4}vw   ${l.glow}2E
-                      `
-                    : "none",
-                  opacity:      on ? 1 : 0.4,
-                  transition:   on ? "none" : "opacity 0.1s",
-                  zIndex:       2,
+                  position:   "absolute",
+                  inset:      0,
+                  background: "radial-gradient(ellipse 70% 50% at 50% 55%, rgba(255,255,255,1) 0%, rgba(220,220,240,0.4) 45%, transparent 80%)",
+                  opacity:    flashAlpha,
+                  zIndex:     8,
                   pointerEvents: "none",
                 }}
               />
-            );
-          })}
-        </div>
-      )}
+            )}
 
-      {/* ── Overlay fade para preto ── */}
-      {fadeBlack > 0 && (
-        <div
-          style={{
-            position:   "absolute",
-            inset:      0,
-            background: "#000",
-            opacity:    fadeBlack,
-            zIndex:     3,
-          }}
-        />
-      )}
+            {/* Wisp 1 — sobe para a esquerda */}
+            {wisp1 > 0.01 && (
+              <div
+                style={{
+                  position:  "absolute",
+                  top:       `${52 - wisp1 * 24}%`,
+                  left:      `${41 - wisp1 * 7}%`,
+                  width:     `${28 + wisp1 * 22}%`,
+                  height:    `${18 + wisp1 * 20}%`,
+                  transform: "translate(-50%, -50%)",
+                  background: "radial-gradient(ellipse at 40% 60%, rgba(255,255,255,0.14) 0%, rgba(200,210,255,0.05) 50%, transparent 75%)",
+                  opacity:   wispBell(wisp1) * 0.9,
+                  pointerEvents: "none",
+                  zIndex:    7,
+                }}
+              />
+            )}
 
-      {/* ── Logo Fedullo (grande, centralizado) ── */}
-      {logoAlpha > 0.01 && (
-        <div
-          style={{
-            position:        "absolute",
-            inset:           0,
-            display:         "flex",
-            alignItems:      "center",
-            justifyContent:  "center",
-            zIndex:          4,
-            opacity:         logoAlpha,
-          }}
-        >
-          <Image
-            src="/fedullo.png"
-            alt="Fedullo"
-            width={600}
-            height={350}
-            style={{ width: "clamp(280px, 58vw, 640px)", height: "auto" }}
-            priority
-          />
-        </div>
-      )}
+            {/* Wisp 2 — sobe para a direita (atrasado) */}
+            {wisp2 > 0.01 && (
+              <div
+                style={{
+                  position:  "absolute",
+                  top:       `${56 - wisp2 * 20}%`,
+                  left:      `${60 + wisp2 * 6}%`,
+                  width:     `${22 + wisp2 * 18}%`,
+                  height:    `${16 + wisp2 * 17}%`,
+                  transform: "translate(-50%, -50%)",
+                  background: "radial-gradient(ellipse at 60% 55%, rgba(255,255,255,0.10) 0%, rgba(210,200,255,0.04) 55%, transparent 80%)",
+                  opacity:   wispBell(wisp2) * 0.75,
+                  pointerEvents: "none",
+                  zIndex:    7,
+                }}
+              />
+            )}
 
-      {/* ── Linha de brilho efeito TV ── */}
-      {elapsed >= TV_START && tvGlow > 0.02 && (
-        <div
-          style={{
-            position:   "absolute",
-            top:        "50%",
-            left:       0,
-            right:      0,
-            height:     3,
-            background: "#fff",
-            boxShadow:  `
-              0 0 60px  30px rgba(255,255,255,${(tvGlow * 0.95).toFixed(2)}),
-              0 0 120px 60px rgba(255,255,255,${(tvGlow * 0.45).toFixed(2)})
-            `,
-            transform:  "translateY(-50%)",
-            zIndex:     5,
-            pointerEvents: "none",
-          }}
-        />
-      )}
+            {/* Wisp 3 — bloom central que se expande */}
+            {wisp3 > 0.01 && (
+              <div
+                style={{
+                  position:  "absolute",
+                  top:       `${50 - wisp3 * 16}%`,
+                  left:      "50%",
+                  width:     `${36 + wisp3 * 34}%`,
+                  height:    `${24 + wisp3 * 28}%`,
+                  transform: "translate(-50%, -50%)",
+                  background: "radial-gradient(ellipse at 50% 60%, rgba(255,255,255,0.09) 0%, rgba(180,190,255,0.03) 55%, transparent 80%)",
+                  opacity:   wispBell(wisp3) * 0.85,
+                  pointerEvents: "none",
+                  zIndex:    7,
+                }}
+              />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
