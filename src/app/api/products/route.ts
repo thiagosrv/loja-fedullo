@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
           category: true,
           images: { orderBy: { position: "asc" } },
           brands: { include: { brand: true } },
+          tags:   { include: { tag: true } },
         },
         orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
         skip: (page - 1) * limit,

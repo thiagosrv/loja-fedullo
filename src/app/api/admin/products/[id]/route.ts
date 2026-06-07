@@ -14,6 +14,7 @@ export async function GET(
         category: true,
         images: { orderBy: { position: "asc" } },
         brands: { include: { brand: true } },
+        tags:   { include: { tag:   true } },
       },
     });
     if (!product) return NextResponse.json({ error: "Produto não encontrado" }, { status: 404 });
@@ -32,38 +33,41 @@ export async function PATCH(
   try {
     const body = await request.json();
     const {
-      name, description, price, salePrice, onSale, saleEndsAt,
+      name, subtitle, description, dimensions, observations,
+      price, salePrice, onSale, saleEndsAt,
       stock, sku, featured, active, categoryId,
-      brandIds, imageUrls,
+      brandIds, imageUrls, tagIds,
     } = body;
 
     const data: Record<string, unknown> = {};
-    if (name !== undefined) { data.name = name; data.slug = slugify(name); }
-    if (description !== undefined) data.description = description;
-    if (price !== undefined) data.price = Math.round(price);
-    if (salePrice !== undefined) data.salePrice = salePrice ? Math.round(salePrice) : null;
-    if (onSale !== undefined) data.onSale = onSale;
-    if (saleEndsAt !== undefined) data.saleEndsAt = saleEndsAt ? new Date(saleEndsAt) : null;
-    if (stock !== undefined) data.stock = stock;
-    if (sku !== undefined) data.sku = sku || null;
-    if (featured !== undefined) data.featured = featured;
-    if (active !== undefined) data.active = active;
-    if (categoryId !== undefined) data.categoryId = categoryId;
+    if (name         !== undefined) { data.name = name; data.slug = slugify(name); }
+    if (subtitle     !== undefined) data.subtitle     = subtitle     ?? null;
+    if (description  !== undefined) data.description  = description;
+    if (dimensions   !== undefined) data.dimensions   = dimensions   ?? null;
+    if (observations !== undefined) data.observations = observations ?? null;
+    if (price        !== undefined) data.price        = Math.round(price);
+    if (salePrice    !== undefined) data.salePrice    = salePrice ? Math.round(salePrice) : null;
+    if (onSale       !== undefined) data.onSale       = onSale;
+    if (saleEndsAt   !== undefined) data.saleEndsAt   = saleEndsAt ? new Date(saleEndsAt) : null;
+    if (stock        !== undefined) data.stock        = stock;
+    if (sku          !== undefined) data.sku          = sku || null;
+    if (featured     !== undefined) data.featured     = featured;
+    if (active       !== undefined) data.active       = active;
+    if (categoryId   !== undefined) data.categoryId   = categoryId;
 
-    // Handle images replacement
     if (imageUrls !== undefined) {
       await db.productImage.deleteMany({ where: { productId: id } });
-      data.images = {
-        create: imageUrls.map((url: string, i: number) => ({ url, position: i })),
-      };
+      data.images = { create: imageUrls.map((url: string, i: number) => ({ url, position: i })) };
     }
 
-    // Handle brands replacement
     if (brandIds !== undefined) {
       await db.productBrand.deleteMany({ where: { productId: id } });
-      data.brands = {
-        create: brandIds.map((brandId: string) => ({ brandId })),
-      };
+      data.brands = { create: brandIds.map((brandId: string) => ({ brandId })) };
+    }
+
+    if (tagIds !== undefined) {
+      await db.productTag.deleteMany({ where: { productId: id } });
+      data.tags = { create: tagIds.map((tagId: string) => ({ tagId })) };
     }
 
     const product = await db.product.update({
@@ -73,6 +77,7 @@ export async function PATCH(
         category: true,
         images: { orderBy: { position: "asc" } },
         brands: { include: { brand: true } },
+        tags:   { include: { tag:   true } },
       },
     });
 

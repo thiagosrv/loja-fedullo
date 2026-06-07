@@ -54,25 +54,60 @@ model Brand {
 }
 
 model Product {
-  id          String         @id @default(cuid())
-  name        String
-  slug        String         @unique
-  description String
-  price       Int
-  salePrice   Int?
-  onSale      Boolean        @default(false)
-  saleEndsAt  DateTime?
-  stock       Int            @default(0)
-  sku         String?        @unique
-  featured    Boolean        @default(false)
-  active      Boolean        @default(true)
-  categoryId  String
-  category    Category       @relation(fields: [categoryId], references: [id])
-  images      ProductImage[]
-  brands      ProductBrand[]
-  orderItems  OrderItem[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id           String         @id @default(cuid())
+  name         String
+  slug         String         @unique
+  subtitle     String?
+  description  String
+  dimensions   String?
+  observations String?
+  price        Int
+  salePrice    Int?
+  onSale       Boolean        @default(false)
+  saleEndsAt   DateTime?
+  stock        Int            @default(0)
+  sku          String?        @unique
+  featured     Boolean        @default(false)
+  active       Boolean        @default(true)
+  categoryId   String
+  category     Category       @relation(fields: [categoryId], references: [id])
+  images       ProductImage[]
+  brands       ProductBrand[]
+  tags         ProductTag[]
+  orderItems   OrderItem[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+// ─── Tags de produto ──────────────────────────────────────────────────────────
+
+enum TagType {
+  FRETE_GRATIS
+  PROMOCAO
+  NOVO
+  MAIS_VENDIDO
+  GARANTIA
+  COMPATIBILIDADE
+  CUSTOM
+}
+
+model Tag {
+  id        String       @id @default(cuid())
+  name      String
+  type      TagType      @default(CUSTOM)
+  color     String       @default("#dc2626")
+  active    Boolean      @default(true)
+  products  ProductTag[]
+  createdAt DateTime     @default(now())
+}
+
+model ProductTag {
+  productId String
+  tagId     String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
 }
 
 model ProductImage {

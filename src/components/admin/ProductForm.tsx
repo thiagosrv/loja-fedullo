@@ -4,21 +4,24 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  Upload, X, GripVertical, Star, Tag, AlertCircle,
+  Upload, X, GripVertical, Star, Tag as TagIcon, AlertCircle,
   CheckCircle, Loader2, ChevronDown,
 } from "lucide-react";
 
 interface Category { id: string; name: string }
 interface Brand { id: string; name: string; slug: string }
+interface TagOption { id: string; name: string; color: string; type: string }
 interface ProductImage { id?: string; url: string; file?: File }
 
 interface ProductFormProps {
   productId?: string;
   initialData?: {
-    name: string; description: string; price: number; salePrice?: number | null;
+    name: string; subtitle?: string | null; description: string;
+    dimensions?: string | null; observations?: string | null;
+    price: number; salePrice?: number | null;
     onSale: boolean; saleEndsAt?: string | null; stock: number; sku?: string | null;
     featured: boolean; active: boolean; categoryId: string;
-    brandIds: string[]; imageUrls: string[];
+    brandIds: string[]; imageUrls: string[]; tagIds?: string[];
   };
 }
 
@@ -35,13 +38,17 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [availableTags, setAvailableTags] = useState<TagOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   // Form fields
   const [name, setName] = useState(initialData?.name ?? "");
+  const [subtitle, setSubtitle] = useState(initialData?.subtitle ?? "");
   const [description, setDescription] = useState(initialData?.description ?? "");
+  const [dimensions, setDimensions] = useState(initialData?.dimensions ?? "");
+  const [observations, setObservations] = useState(initialData?.observations ?? "");
   const [price, setPrice] = useState(initialData?.price ? centsToReais(initialData.price) : "");
   const [salePrice, setSalePrice] = useState(initialData?.salePrice ? centsToReais(initialData.salePrice) : "");
   const [onSale, setOnSale] = useState(initialData?.onSale ?? false);
@@ -52,37 +59,33 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
   const [active, setActive] = useState(initialData?.active ?? true);
   const [categoryId, setCategoryId] = useState(initialData?.categoryId ?? "");
   const [selectedBrands, setSelectedBrands] = useState<string[]>(initialData?.brandIds ?? []);
+  const [selectedTags, setSelectedTags] = useState<string[]>(initialData?.tagIds ?? []);
   const [images, setImages] = useState<ProductImage[]>(
     (initialData?.imageUrls ?? []).map(url => ({ url }))
   );
 
-  // Image upload state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/admin/categories").then(r => r.json()).then(d => setCategories(d.categories ?? []));
-    fetch("/api/products?limit=100").then(r => r.json()).then(() => {
-      // Load brands from constants
-      fetch("/api/admin/categories").then(() => {});
-    });
-    // Load brands separately
     fetch("/api/admin/brands").then(r => r.json()).then(d => setBrands(d.brands ?? [])).catch(() => {
-      // fallback hardcoded brands
       setBrands([
-        { id: "brand_vw", name: "Volkswagen", slug: "volkswagen" },
-        { id: "brand_ford", name: "Ford", slug: "ford" },
-        { id: "brand_chev", name: "Chevrolet", slug: "chevrolet" },
-        { id: "brand_fiat", name: "Fiat", slug: "fiat" },
+        { id: "brand_vw",   name: "Volkswagen", slug: "volkswagen" },
+        { id: "brand_ford", name: "Ford",        slug: "ford" },
+        { id: "brand_chev", name: "Chevrolet",   slug: "chevrolet" },
+        { id: "brand_fiat", name: "Fiat",        slug: "fiat" },
       ]);
     });
+    fetch("/api/admin/tags").then(r => r.json()).then(d => {
+      setAvailableTags((d.tags ?? []).filter((t: TagOption & { active?: boolean }) => t.active !== false));
+    }).catch(() => {});
   }, []);
 
   const handleFiles = useCallback(async (files: FileList | File[]) => {
     const fileArr = Array.from(files);
     if (!fileArr.length) return;
-
     setUploading(true);
     try {
       const formData = new FormData();
@@ -110,7 +113,6 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
   function removeImage(idx: number) {
     setImages(prev => prev.filter((_, i) => i !== idx));
   }
-
   function moveImage(from: number, to: number) {
     setImages(prev => {
       const arr = [...prev];
@@ -126,30 +128,33 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
       setError("Preencha nome, categoria e preço");
       return;
     }
-
     setLoading(true);
     setError("");
 
     const body = {
-      name: name.trim(),
-      description: description.trim(),
-      price: reaisToCents(price),
-      salePrice: salePrice ? reaisToCents(salePrice) : null,
+      name:         name.trim(),
+      subtitle:     subtitle.trim() || null,
+      description:  description.trim(),
+      dimensions:   dimensions.trim() || null,
+      observations: observations.trim() || null,
+      price:        reaisToCents(price),
+      salePrice:    salePrice ? reaisToCents(salePrice) : null,
       onSale,
-      saleEndsAt: saleEndsAt || null,
-      stock: parseInt(stock) || 0,
-      sku: sku.trim() || null,
+      saleEndsAt:   saleEndsAt || null,
+      stock:        parseInt(stock) || 0,
+      sku:          sku.trim() || null,
       featured,
       active,
       categoryId,
-      brandIds: selectedBrands,
-      imageUrls: images.map(img => img.url),
+      brandIds:     selectedBrands,
+      imageUrls:    images.map(img => img.url),
+      tagIds:       selectedTags,
     };
 
     try {
-      const url = isEdit ? `/api/admin/products/${productId}` : "/api/admin/products";
+      const url    = isEdit ? `/api/admin/products/${productId}` : "/api/admin/products";
       const method = isEdit ? "PATCH" : "POST";
-      const res = await fetch(url, {
+      const res    = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -169,20 +174,18 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
     }
   }
 
-  const inputCls = "w-full h-10 rounded-[6px] border border-[#2a2a2a] bg-[#111] px-3 text-sm text-white placeholder-[#4b5563] focus:outline-none focus:border-[#dc2626] transition-colors";
-  const labelCls = "block text-xs font-medium text-[#9ca3af] mb-1.5";
-  const sectionCls = "rounded-[10px] border border-[#1a1a1a] bg-[#0a0a0a] p-6 space-y-4";
+  const inputCls    = "w-full h-10 rounded-[6px] border border-[#2a2a2a] bg-[#111] px-3 text-sm text-white placeholder-[#4b5563] focus:outline-none focus:border-[#dc2626] transition-colors";
+  const textareaCls = "w-full rounded-[6px] border border-[#2a2a2a] bg-[#111] px-3 py-2.5 text-sm text-white placeholder-[#4b5563] focus:outline-none focus:border-[#dc2626] transition-colors resize-none";
+  const labelCls    = "block text-xs font-medium text-[#9ca3af] mb-1.5";
+  const sectionCls  = "rounded-[10px] border border-[#1a1a1a] bg-[#0a0a0a] p-6 space-y-4";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
-      {/* Success banner */}
       {success && (
         <div className="flex items-center gap-3 rounded-[6px] border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400">
           <CheckCircle size={16} /> Produto salvo com sucesso! Redirecionando...
         </div>
       )}
-
-      {/* Error banner */}
       {error && (
         <div className="flex items-center gap-3 rounded-[6px] border border-[#dc2626]/30 bg-[#dc2626]/10 px-4 py-3 text-sm text-[#f87171]">
           <AlertCircle size={16} /> {error}
@@ -190,7 +193,7 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
       )}
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left column — main info */}
+        {/* ── Left: main info ── */}
         <div className="lg:col-span-2 space-y-6">
 
           {/* Basic info */}
@@ -206,12 +209,35 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
             </div>
 
             <div>
+              <label className={labelCls}>Subtítulo <span className="text-[#4b5563]">(opcional)</span></label>
+              <input type="text" value={subtitle} onChange={e => setSubtitle(e.target.value)}
+                className={inputCls} placeholder="Ex: Linha completa com suporte a módulo de injeção" />
+            </div>
+
+            <div>
               <label className={labelCls}>Descrição</label>
               <textarea
                 value={description} onChange={e => setDescription(e.target.value)}
-                rows={4}
-                className="w-full rounded-[6px] border border-[#2a2a2a] bg-[#111] px-3 py-2.5 text-sm text-white placeholder-[#4b5563] focus:outline-none focus:border-[#dc2626] transition-colors resize-none"
+                rows={4} className={textareaCls}
                 placeholder="Descreva o produto em detalhes..."
+              />
+            </div>
+
+            <div>
+              <label className={labelCls}>Dimensões <span className="text-[#4b5563]">(opcional)</span></label>
+              <textarea
+                value={dimensions} onChange={e => setDimensions(e.target.value)}
+                rows={3} className={textareaCls}
+                placeholder="Ex: Comprimento: 1,80m&#10;Peso: 320g&#10;Conector: 48 vias"
+              />
+            </div>
+
+            <div>
+              <label className={labelCls}>Observações <span className="text-[#4b5563]">(opcional)</span></label>
+              <textarea
+                value={observations} onChange={e => setObservations(e.target.value)}
+                rows={3} className={textareaCls}
+                placeholder="Ex: Requer módulo de injeção original VW. Não incluso."
               />
             </div>
 
@@ -231,7 +257,6 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#4b5563] pointer-events-none" />
                 </div>
               </div>
-
               <div>
                 <label className={labelCls}>SKU</label>
                 <input type="text" value={sku} onChange={e => setSku(e.target.value)}
@@ -245,7 +270,6 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
             <h2 className="text-sm font-semibold text-white border-b border-[#1a1a1a] pb-3 -mx-6 px-6">
               Preço
             </h2>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Preço regular (R$) *</label>
@@ -255,7 +279,6 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                     className={`${inputCls} pl-9`} placeholder="0,00" required />
                 </div>
               </div>
-
               <div>
                 <label className={labelCls}>Preço promocional (R$)</label>
                 <div className="relative">
@@ -265,8 +288,6 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                 </div>
               </div>
             </div>
-
-            {/* On Sale toggle */}
             <div className="flex items-center justify-between p-4 rounded-[6px] border border-[#2a2a2a] bg-[#111]">
               <div>
                 <p className="text-sm font-medium text-white">Em promoção</p>
@@ -279,7 +300,6 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                 <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${onSale ? "translate-x-6" : "translate-x-1"}`} />
               </button>
             </div>
-
             {onSale && (
               <div>
                 <label className={labelCls}>Promoção válida até</label>
@@ -294,8 +314,6 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
             <h2 className="text-sm font-semibold text-white border-b border-[#1a1a1a] pb-3 -mx-6 px-6">
               Imagens do Produto
             </h2>
-
-            {/* Upload zone */}
             <div
               ref={dropRef}
               onDrop={onDrop}
@@ -313,38 +331,26 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                 <p className="text-sm text-[#9ca3af] font-medium">
                   {uploading ? "Enviando..." : "Arraste fotos aqui ou clique para selecionar"}
                 </p>
-                <p className="text-xs text-[#4b5563] mt-1">
-                  JPG, PNG, WebP · Máx 10MB por arquivo · Alta qualidade recomendada
-                </p>
+                <p className="text-xs text-[#4b5563] mt-1">JPG, PNG, WebP · Máx 10MB por arquivo</p>
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/webp,image/avif"
-                className="hidden"
-                onChange={e => e.target.files && handleFiles(e.target.files)}
-              />
+              <input ref={fileInputRef} type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif"
+                className="hidden" onChange={e => e.target.files && handleFiles(e.target.files)} />
             </div>
 
-            {/* Image previews */}
             {images.length > 0 && (
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                 {images.map((img, idx) => (
                   <div key={idx} className="group relative aspect-square rounded-[6px] overflow-hidden bg-[#1a1a1a]">
                     <Image src={img.url} alt={`Imagem ${idx + 1}`} fill className="object-cover" sizes="120px" />
-                    {/* Position badge */}
                     {idx === 0 && (
                       <span className="absolute bottom-1 left-1 text-[9px] font-bold bg-[#dc2626] text-white px-1.5 py-0.5 rounded">
                         CAPA
                       </span>
                     )}
-                    {/* Controls */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       {idx > 0 && (
                         <button type="button" onClick={() => moveImage(idx, idx - 1)}
-                          className="w-7 h-7 rounded bg-white/20 hover:bg-white/40 flex items-center justify-center text-white transition-colors cursor-pointer"
-                          title="Mover para frente">
+                          className="w-7 h-7 rounded bg-white/20 hover:bg-white/40 flex items-center justify-center text-white transition-colors cursor-pointer" title="Mover para frente">
                           <GripVertical size={13} />
                         </button>
                       )}
@@ -360,16 +366,14 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
           </div>
         </div>
 
-        {/* Right column — settings */}
+        {/* ── Right: settings ── */}
         <div className="space-y-6">
           {/* Visibility */}
           <div className={sectionCls}>
             <h2 className="text-sm font-semibold text-white border-b border-[#1a1a1a] pb-3 -mx-6 px-6">
               Visibilidade
             </h2>
-
             <div className="space-y-3">
-              {/* Active */}
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-white font-medium">Produto ativo</p>
@@ -380,8 +384,6 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
                   <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${active ? "translate-x-6" : "translate-x-1"}`} />
                 </button>
               </div>
-
-              {/* Featured */}
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-white font-medium flex items-center gap-1.5">
@@ -412,45 +414,72 @@ export function ProductForm({ productId, initialData }: ProductFormProps) {
           {/* Brands */}
           <div className={sectionCls}>
             <h2 className="text-sm font-semibold text-white border-b border-[#1a1a1a] pb-3 -mx-6 px-6">
-              <span className="flex items-center gap-2"><Tag size={14} /> Marcas Compatíveis</span>
+              <span className="flex items-center gap-2"><TagIcon size={14} /> Marcas Compatíveis</span>
             </h2>
             <div className="space-y-2">
               {brands.map(b => (
                 <label key={b.id} className="flex items-center gap-2.5 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={selectedBrands.includes(b.id)}
-                    onChange={e => {
-                      setSelectedBrands(prev =>
-                        e.target.checked ? [...prev, b.id] : prev.filter(id => id !== b.id)
-                      );
-                    }}
+                  <input type="checkbox" checked={selectedBrands.includes(b.id)}
+                    onChange={e => setSelectedBrands(prev =>
+                      e.target.checked ? [...prev, b.id] : prev.filter(id => id !== b.id)
+                    )}
                     className="w-4 h-4 rounded border-[#2a2a2a] accent-[#dc2626] cursor-pointer"
                   />
-                  <span className="text-sm text-[#9ca3af] group-hover:text-white transition-colors">
-                    {b.name}
-                  </span>
+                  <span className="text-sm text-[#9ca3af] group-hover:text-white transition-colors">{b.name}</span>
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Tags */}
+          <div className={sectionCls}>
+            <h2 className="text-sm font-semibold text-white border-b border-[#1a1a1a] pb-3 -mx-6 px-6">
+              <span className="flex items-center gap-2">
+                <TagIcon size={14} className="text-[#dc2626]" /> Tags do Produto
+              </span>
+            </h2>
+            {availableTags.length === 0 ? (
+              <p className="text-xs text-[#4b5563]">
+                Nenhuma tag cadastrada.{" "}
+                <a href="/admin/tags" className="text-[#dc2626] hover:underline">
+                  Criar tags
+                </a>
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {availableTags.map(tag => (
+                  <label key={tag.id} className="flex items-center gap-2.5 cursor-pointer group">
+                    <input type="checkbox" checked={selectedTags.includes(tag.id)}
+                      onChange={e => setSelectedTags(prev =>
+                        e.target.checked ? [...prev, tag.id] : prev.filter(id => id !== tag.id)
+                      )}
+                      className="w-4 h-4 rounded border-[#2a2a2a] accent-[#dc2626] cursor-pointer"
+                    />
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase text-white"
+                      style={{ backgroundColor: tag.color }}
+                    >
+                      {tag.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+            <a href="/admin/tags" className="block text-xs text-[#4b5563] hover:text-[#dc2626] transition-colors mt-1">
+              + Gerenciar tags
+            </a>
           </div>
         </div>
       </div>
 
       {/* Submit bar */}
       <div className="flex items-center gap-4 pt-2 border-t border-[#1a1a1a]">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="h-10 px-5 rounded-[6px] border border-[#2a2a2a] text-sm text-[#9ca3af] hover:border-[#4b5563] hover:text-white transition-colors cursor-pointer"
-        >
+        <button type="button" onClick={() => router.back()}
+          className="h-10 px-5 rounded-[6px] border border-[#2a2a2a] text-sm text-[#9ca3af] hover:border-[#4b5563] hover:text-white transition-colors cursor-pointer">
           Cancelar
         </button>
-        <button
-          type="submit"
-          disabled={loading || success}
-          className="h-10 px-6 rounded-[6px] bg-[#dc2626] text-white text-sm font-semibold hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center gap-2"
-        >
+        <button type="submit" disabled={loading || success}
+          className="h-10 px-6 rounded-[6px] bg-[#dc2626] text-white text-sm font-semibold hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center gap-2">
           {loading && <Loader2 size={14} className="animate-spin" />}
           {loading ? "Salvando..." : isEdit ? "Salvar Alterações" : "Criar Produto"}
         </button>

@@ -8,27 +8,32 @@ export default async function EditProdutoPage({ params }: { params: Promise<{ id
   const product = await db.product.findUnique({
     where: { id },
     include: {
-      images: { orderBy: { position: "asc" } },
-      brands: { include: { brand: true } },
+      images:  { orderBy: { position: "asc" } },
+      brands:  { include: { brand: true } },
+      tags:    { include: { tag: true } },
     },
   });
 
   if (!product) notFound();
 
   const initialData = {
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    salePrice: product.salePrice,
-    onSale: product.onSale,
-    saleEndsAt: product.saleEndsAt?.toISOString() ?? null,
-    stock: product.stock,
-    sku: product.sku,
-    featured: product.featured,
-    active: product.active,
-    categoryId: product.categoryId,
-    brandIds: product.brands.map(pb => pb.brandId),
-    imageUrls: product.images.map(img => img.url),
+    name:         product.name,
+    subtitle:     (product as unknown as { subtitle?: string | null }).subtitle ?? null,
+    description:  product.description,
+    dimensions:   (product as unknown as { dimensions?: string | null }).dimensions ?? null,
+    observations: (product as unknown as { observations?: string | null }).observations ?? null,
+    price:        product.price,
+    salePrice:    product.salePrice,
+    onSale:       product.onSale,
+    saleEndsAt:   product.saleEndsAt?.toISOString() ?? null,
+    stock:        product.stock,
+    sku:          product.sku,
+    featured:     product.featured,
+    active:       product.active,
+    categoryId:   product.categoryId,
+    brandIds:     product.brands.map(pb => pb.brandId),
+    imageUrls:    product.images.map(img => img.url),
+    tagIds:       (product as unknown as { tags: { tagId: string }[] }).tags.map(pt => pt.tagId),
   };
 
   return (

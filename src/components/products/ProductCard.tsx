@@ -39,7 +39,21 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {mainImage && product.featured && (
+        {/* Tags overlay */}
+        {(product.tags ?? []).length > 0 && (
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {(product.tags ?? []).slice(0, 2).map((pt) => (
+              <span
+                key={pt.tag.id}
+                className="text-[9px] font-bold px-1.5 py-0.5 rounded text-white uppercase tracking-wide"
+                style={{ backgroundColor: pt.tag.color }}
+              >
+                {pt.tag.name}
+              </span>
+            ))}
+          </div>
+        )}
+        {!(product.tags ?? []).length && mainImage && product.featured && (
           <div className="absolute top-2 left-2">
             <Badge variant="accent">Destaque</Badge>
           </div>

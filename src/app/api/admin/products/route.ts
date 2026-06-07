@@ -46,9 +46,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
-      name, description, price, salePrice, onSale, saleEndsAt,
+      name, subtitle, description, dimensions, observations,
+      price, salePrice, onSale, saleEndsAt,
       stock, sku, featured, active, categoryId,
-      brandIds = [], imageUrls = [],
+      brandIds = [], imageUrls = [], tagIds = [],
     } = body;
 
     if (!name || !categoryId || price === undefined) {
@@ -61,7 +62,10 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         slug,
-        description: description ?? "",
+        subtitle:     subtitle     ?? null,
+        description:  description  ?? "",
+        dimensions:   dimensions   ?? null,
+        observations: observations ?? null,
         price: Math.round(price),
         salePrice: salePrice ? Math.round(salePrice) : null,
         onSale: onSale ?? false,
@@ -72,19 +76,20 @@ export async function POST(request: NextRequest) {
         active: active ?? true,
         categoryId,
         images: {
-          create: imageUrls.map((url: string, i: number) => ({
-            url,
-            position: i,
-          })),
+          create: imageUrls.map((url: string, i: number) => ({ url, position: i })),
         },
         brands: {
           create: brandIds.map((brandId: string) => ({ brandId })),
+        },
+        tags: {
+          create: tagIds.map((tagId: string) => ({ tagId })),
         },
       },
       include: {
         category: true,
         images: true,
         brands: { include: { brand: true } },
+        tags:   { include: { tag:   true } },
       },
     });
 

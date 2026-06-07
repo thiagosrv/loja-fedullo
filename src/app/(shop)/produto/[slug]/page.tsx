@@ -1,9 +1,11 @@
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/products/AddToCartButton";
-import { Badge } from "@/components/ui/Badge";
+import { ProductGallery } from "@/components/products/ProductGallery";
+import { ProductTabs } from "@/components/products/ProductTabs";
+import { BuyTogetherCarousel } from "@/components/products/BuyTogetherCarousel";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
-import Image from "next/image";
+import { ShieldCheck, Truck, RotateCcw, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import type { Product } from "@/types/product";
 
@@ -13,11 +15,14 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const product = await db.product.findUnique({ where: { slug } });
+  const product = await db.product.findUnique({
+    where: { slug },
+    select: { name: true, description: true },
+  });
   if (!product) return { title: "Produto não encontrado" };
   return {
     title: product.name,
-    description: product.description,
+    description: product.description.slice(0, 160),
   };
 }
 
@@ -30,101 +35,173 @@ export default async function ProductPage({ params }: Props) {
       category: true,
       images: { orderBy: { position: "asc" } },
       brands: { include: { brand: true } },
+      tags:   { include: { tag: true } },
     },
   })) as unknown as Product | null;
 
   if (!product) notFound();
 
-  const mainImage = product.images[0];
+  const displayPrice =
+    product.onSale && product.salePrice ? product.salePrice : product.price;
+  const hasDiscount = product.onSale && product.salePrice;
+  const discountPct = hasDiscount
+    ? Math.round(100 - (product.salePrice! / product.price) * 100)
+    : 0;
+
+  const activeTags = (product.tags ?? []).filter((pt) => pt.tag);
+
+  const TRUST = [
+    { icon: ShieldCheck, label: "Compra Segura" },
+    { icon: Truck,        label: "Frete Calculado" },
+    { icon: RotateCcw,    label: "Política de Troca" },
+    { icon: Zap,          label: "Envio Rápido" },
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Image */}
-        <div className="relative aspect-square rounded-[8px] bg-[#111111] border border-[#1f1f1f] overflow-hidden">
-          {mainImage ? (
-            <Image
-              src={mainImage.url}
-              alt={mainImage.alt ?? product.name}
-              fill
-              className="object-cover"
-              priority
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[#2a2a2a] text-sm">Sem imagem</span>
-            </div>
-          )}
-        </div>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-xs text-[#4b5563] mb-8">
+        <a href="/" className="hover:text-white transition-colors">Início</a>
+        <span>/</span>
+        <a
+          href={`/${product.category.slug}`}
+          className="hover:text-white transition-colors"
+        >
+          {product.category.name}
+        </a>
+        <span>/</span>
+        <span className="text-[#9ca3af] truncate max-w-[160px]">{product.name}</span>
+      </nav>
 
-        {/* Info */}
-        <div className="flex flex-col gap-6">
-          <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="h-px w-6 bg-[#dc2626]" />
-              <span className="text-xs font-bold tracking-[0.2em] text-[#dc2626] uppercase">
-                {product.category.name}
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">{product.name}</h1>
-            {product.sku && (
-              <p className="text-xs text-[#4a4a4a] mt-1">SKU: {product.sku}</p>
-            )}
-          </div>
+      {/* Main grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14">
+        {/* ── Gallery ── */}
+        <ProductGallery images={product.images} productName={product.name} />
 
-          {/* Price */}
-          <div className="flex items-baseline gap-3">
-            <PriceDisplay cents={product.price} className="text-3xl sm:text-4xl font-bold text-white" />
-          </div>
-
-          {/* Description */}
-          <div className="h-px bg-[#1f1f1f]" />
-          <p className="text-[#9ca3af] leading-relaxed">{product.description}</p>
-
-          {/* Compatible brands */}
-          {product.brands.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-[#9ca3af] uppercase tracking-wider mb-2">
-                Compatível com
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {product.brands.map((pb) => (
-                  <Badge key={pb.brand.slug} variant="outline">
-                    {pb.brand.name}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="h-px bg-[#1f1f1f]" />
-
-          {/* Stock info */}
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${product.stock > 0 ? "bg-green-500" : "bg-[#dc2626]"}`} />
-            <span className="text-sm text-[#9ca3af]">
-              {product.stock > 0
-                ? product.stock <= 5
-                  ? `Últimas ${product.stock} unidades`
-                  : "Em estoque"
-                : "Esgotado"}
+        {/* ── Info ── */}
+        <div className="flex flex-col gap-5">
+          {/* Category label */}
+          <div className="flex items-center gap-3">
+            <div className="h-px w-6 bg-[#dc2626]" />
+            <span className="text-xs font-bold tracking-[0.2em] text-[#dc2626] uppercase">
+              {product.category.name}
             </span>
           </div>
 
-          {/* Add to cart */}
+          {/* Title + subtitle */}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-snug">
+              {product.name}
+            </h1>
+            {product.subtitle && (
+              <p className="text-[#9ca3af] mt-1.5 text-sm leading-relaxed">
+                {product.subtitle}
+              </p>
+            )}
+            {product.sku && (
+              <p className="text-xs text-[#3a3a3a] mt-1.5">SKU: {product.sku}</p>
+            )}
+          </div>
+
+          {/* Tags */}
+          {activeTags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {activeTags.map((pt) => (
+                <span
+                  key={pt.tag.id}
+                  className="inline-flex items-center px-2.5 py-1 rounded-[4px] text-[11px] font-bold uppercase tracking-wider text-white"
+                  style={{ backgroundColor: pt.tag.color }}
+                >
+                  {pt.tag.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Compatible brands */}
+          {product.brands.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-[#4b5563] font-medium">Compatível com:</span>
+              {product.brands.map((pb) => (
+                <span
+                  key={pb.brand.slug}
+                  className="px-2.5 py-1 rounded-[4px] border border-[#2a2a2a] bg-[#111] text-xs text-[#9ca3af] font-medium"
+                >
+                  {pb.brand.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="h-px bg-[#1f1f1f]" />
+
+          {/* Price */}
+          <div className="flex items-baseline gap-3">
+            <PriceDisplay
+              cents={displayPrice}
+              className="text-3xl sm:text-4xl font-bold text-white"
+            />
+            {hasDiscount && (
+              <>
+                <span className="text-base text-[#4b5563] line-through">
+                  {(product.price / 100).toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
+                </span>
+                <span className="px-2 py-0.5 rounded-[4px] bg-[#dc2626] text-white text-xs font-bold">
+                  -{discountPct}%
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Stock indicator */}
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full ${
+                product.stock > 0 ? "bg-green-500" : "bg-[#dc2626]"
+              }`}
+            />
+            <span className="text-sm text-[#9ca3af]">
+              {product.stock === 0
+                ? "Esgotado"
+                : product.stock <= 5
+                ? `Últimas ${product.stock} unidades`
+                : "Em estoque"}
+            </span>
+          </div>
+
+          {/* Qty + Add to cart */}
           <AddToCartButton product={product} />
 
           {/* Trust badges */}
-          <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
-            {["Compra Segura", "Frete Calculado", "Nota Fiscal"].map((item) => (
-              <div key={item} className="flex items-center gap-1.5">
-                <div className="w-1 h-1 rounded-full bg-[#dc2626]" />
-                <span className="text-xs text-[#9ca3af]">{item}</span>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 pt-1">
+            {TRUST.map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center gap-1.5 rounded-[8px] border border-[#1a1a1a] bg-[#0a0a0a] py-3 px-2"
+              >
+                <Icon size={18} className="text-[#dc2626]" strokeWidth={1.5} />
+                <span className="text-[10px] text-[#6b7280] text-center leading-tight font-medium">
+                  {label}
+                </span>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* ── Tabs: Descrição / Dimensões / Observações ── */}
+      <ProductTabs
+        description={product.description}
+        dimensions={product.dimensions ?? null}
+        observations={product.observations ?? null}
+      />
+
+      {/* ── You might also like ── */}
+      <BuyTogetherCarousel productId={product.id} />
     </div>
   );
 }
