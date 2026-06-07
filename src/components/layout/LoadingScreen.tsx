@@ -3,68 +3,58 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 
-// ─── Timings (ms) ─────────────────────────────────────────────────────────────
-const LIGHTS_END   = 2000;   // lights sequence finishes
-const FADE_START   = 2000;   // black overlay starts
-const FADE_END     = 2450;   // fully black
-const LOGO_IN      = 2500;   // logo starts appearing
-const LOGO_PEAK    = 2850;   // logo fully visible
-const LOGO_OUT     = 3400;   // logo starts fading
-const LOGO_GONE    = 3750;   // logo invisible
-const TV_START     = 3750;   // TV collapse begins
-const TV_END       = 4250;   // TV fully collapsed → done
+// ─── Dimensões reais da imagem ─────────────────────────────────────────────────
+const IMG_W = 1536;
+const IMG_H = 1024;
 
-// ─── Christmas tree lights ─────────────────────────────────────────────────────
-// Positions calibrated for the drag strip photo displayed with
-// object-fit:cover + object-position:center 20% on a 16:9 desktop screen.
-// top/left are % of VIEWPORT.
+// Converte pixel da imagem → % do container
+const px = (x: number, dim: number) => +(x / dim * 100).toFixed(4);
+
+// ─── Posições exatas das luzes (coordenadas em pixels na imagem original) ──────
 const LIGHTS = [
-  // PRE-STAGE — small amber at the very top
-  { top:  7.0, left: 48.4, color: "#fbbf24", bloom: "#fbbf24", ms:    0, size: 5 },
-  { top:  7.0, left: 51.6, color: "#fbbf24", bloom: "#fbbf24", ms:    0, size: 5 },
-  // STAGE
-  { top: 11.5, left: 48.2, color: "#fbbf24", bloom: "#fbbf24", ms:  200, size: 5 },
-  { top: 11.5, left: 51.8, color: "#fbbf24", bloom: "#fbbf24", ms:  200, size: 5 },
-  // Yellow row 1
-  { top: 18.5, left: 46.1, color: "#f59e0b", bloom: "#f59e0b", ms:  450, size: 8 },
-  { top: 18.5, left: 53.9, color: "#f59e0b", bloom: "#f59e0b", ms:  450, size: 8 },
-  // Yellow row 2
-  { top: 25.5, left: 45.8, color: "#f59e0b", bloom: "#f59e0b", ms:  700, size: 8 },
-  { top: 25.5, left: 54.2, color: "#f59e0b", bloom: "#f59e0b", ms:  700, size: 8 },
-  // Yellow row 3
-  { top: 32.5, left: 45.8, color: "#f59e0b", bloom: "#f59e0b", ms:  950, size: 8 },
-  { top: 32.5, left: 54.2, color: "#f59e0b", bloom: "#f59e0b", ms:  950, size: 8 },
-  // Green row 1
-  { top: 41.0, left: 45.8, color: "#22c55e", bloom: "#22c55e", ms: 1250, size: 8 },
-  { top: 41.0, left: 54.2, color: "#22c55e", bloom: "#22c55e", ms: 1250, size: 8 },
-  // Green row 2
-  { top: 48.0, left: 46.1, color: "#22c55e", bloom: "#22c55e", ms: 1550, size: 8 },
-  { top: 48.0, left: 53.9, color: "#22c55e", bloom: "#22c55e", ms: 1550, size: 8 },
-  // Red
-  { top: 55.0, left: 47.3, color: "#ef4444", bloom: "#ef4444", ms: 1820, size: 8 },
-  { top: 55.0, left: 52.7, color: "#ef4444", bloom: "#ef4444", ms: 1820, size: 8 },
+  // ── Laranja par 1 ──
+  { left: px(721, IMG_W), top: px(279, IMG_H), color: "#f97316", glow: "#f97316", ms:    0 },
+  { left: px(806, IMG_W), top: px(279, IMG_H), color: "#f97316", glow: "#f97316", ms:    0 },
+  // ── Laranja par 2 ──
+  { left: px(720, IMG_W), top: px(325, IMG_H), color: "#f97316", glow: "#f97316", ms:  380 },
+  { left: px(805, IMG_W), top: px(325, IMG_H), color: "#f97316", glow: "#f97316", ms:  380 },
+  // ── Laranja par 3 ──
+  { left: px(721, IMG_W), top: px(371, IMG_H), color: "#f97316", glow: "#f97316", ms:  760 },
+  { left: px(805, IMG_W), top: px(371, IMG_H), color: "#f97316", glow: "#f97316", ms:  760 },
+  // ── Verde ──
+  { left: px(721, IMG_W), top: px(416, IMG_H), color: "#22c55e", glow: "#22c55e", ms: 1180 },
+  { left: px(804, IMG_W), top: px(414, IMG_H), color: "#22c55e", glow: "#22c55e", ms: 1180 },
+  // ── Vermelho ──
+  { left: px(720, IMG_W), top: px(462, IMG_H), color: "#ef4444", glow: "#ef4444", ms: 1560 },
+  { left: px(804, IMG_W), top: px(463, IMG_H), color: "#ef4444", glow: "#ef4444", ms: 1560 },
 ] as const;
 
-// ─── Easing ────────────────────────────────────────────────────────────────────
+// ─── Timings (ms) ─────────────────────────────────────────────────────────────
+const FADE_START  = 1800;  // fade para preto começa
+const FADE_END    = 2250;  // totalmente preto
+const LOGO_IN     = 2300;  // logo aparece
+const LOGO_PEAK   = 2650;  // logo totalmente visível
+const LOGO_OUT    = 3200;  // logo começa a sumir
+const LOGO_GONE   = 3550;  // logo invisível
+const TV_START    = 3550;  // efeito TV começa
+const TV_END      = 4050;  // efeito TV termina → site abre
+
 function easeOut(t: number) { return 1 - Math.pow(1 - t, 3); }
-function clamp01(t: number) { return Math.max(0, Math.min(1, t)); }
+function clamp(t: number)   { return Math.max(0, Math.min(1, t)); }
 
 export function LoadingScreen() {
   const [elapsed, setElapsed] = useState(0);
-  const [gone, setGone]       = useState(false);
-  const rafRef                = useRef<number>(0);
-  const startRef              = useRef<number>(0);
+  const [gone,    setGone]    = useState(false);
+  const rafRef  = useRef<number>(0);
+  const startRef = useRef<number>(0);
 
   useEffect(() => {
     startRef.current = performance.now();
     const tick = (now: number) => {
       const ms = now - startRef.current;
       setElapsed(ms);
-      if (ms < TV_END + 50) {
-        rafRef.current = requestAnimationFrame(tick);
-      } else {
-        setGone(true);
-      }
+      if (ms < TV_END + 60) rafRef.current = requestAnimationFrame(tick);
+      else setGone(true);
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
@@ -72,17 +62,18 @@ export function LoadingScreen() {
 
   if (gone) return null;
 
-  // ── derived values ──
-  const fadeBlack  = clamp01((elapsed - FADE_START) / (FADE_END - FADE_START));
+  // ── Overlay preto (fade) ──
+  const fadeBlack = clamp((elapsed - FADE_START) / (FADE_END - FADE_START));
 
-  const logoIn     = clamp01((elapsed - LOGO_IN)   / (LOGO_PEAK - LOGO_IN));
-  const logoOut    = clamp01((elapsed - LOGO_OUT)   / (LOGO_GONE - LOGO_OUT));
-  const logoOpacity = easeOut(logoIn) * (1 - easeOut(logoOut));
+  // ── Logo ──
+  const logoIn  = easeOut(clamp((elapsed - LOGO_IN)  / (LOGO_PEAK - LOGO_IN)));
+  const logoOut = easeOut(clamp((elapsed - LOGO_OUT) / (LOGO_GONE - LOGO_OUT)));
+  const logoAlpha = logoIn * (1 - logoOut);
 
-  // TV: scaleY from 1 → 0 (collapse to horizontal line) + glow
-  const tvPct      = clamp01((elapsed - TV_START) / (TV_END - TV_START));
-  const tvScale    = 1 - easeOut(tvPct);
-  const tvGlow     = Math.sin(tvPct * Math.PI); // peaks at mid-collapse
+  // ── Efeito TV ──
+  const tvPct   = clamp((elapsed - TV_START) / (TV_END - TV_START));
+  const tvScale = 1 - easeOut(tvPct);
+  const tvGlow  = Math.sin(tvPct * Math.PI);
 
   return (
     <div
@@ -92,112 +83,138 @@ export function LoadingScreen() {
         zIndex:          9999,
         background:      "#000",
         overflow:        "hidden",
-        transform:       elapsed >= TV_START ? `scaleY(${tvScale})` : undefined,
+        transform:       elapsed >= TV_START ? `scaleY(${Math.max(tvScale, 0)})` : undefined,
         transformOrigin: "center",
       }}
     >
-      {/* ── Drag strip photo ── */}
+      {/* ══════════════════════════════════════════════
+          Container com aspect-ratio EXATO da imagem
+          (1536 × 1024 → 3:2).
+          Posicionado no topo-esquerdo, largura = 100vw.
+          Na maioria dos desktops (16:9) a base extrapola
+          o viewport — o overflow: hidden acima corta.
+          As luzes são filhas deste container, por isso
+          o % bate exatamente nos pixels originais.
+      ══════════════════════════════════════════════ */}
       {elapsed < FADE_END + 50 && (
-        <div style={{ position: "absolute", inset: 0 }}>
+        <div
+          style={{
+            position:    "absolute",
+            top:         0,
+            left:        0,
+            width:       "100vw",
+            aspectRatio: `${IMG_W} / ${IMG_H}`,   // CSS nativo
+          }}
+        >
+          {/* Foto do semáforo */}
           <Image
             src="/loading.png"
             alt=""
             fill
             sizes="100vw"
-            style={{ objectFit: "cover", objectPosition: "center 20%" }}
+            style={{ objectFit: "fill" }}   // sem crop — container = ratio exato
             priority
           />
-          {/* Bottom darkening — sky stays bright, track goes dark */}
-          <div style={{
-            position:   "absolute",
-            inset:      0,
-            background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.55) 100%)",
-          }} />
+
+          {/* ── Luzes do semáforo ── */}
+          {LIGHTS.map((l, i) => {
+            const on = elapsed >= l.ms;
+            // burst flash ao acender: size × 1.8 nos primeiros 150ms
+            const age   = elapsed - l.ms;
+            const burst = on && age < 150 ? 1 + (1 - age / 150) * 0.8 : 1;
+
+            // tamanho base em vw (proporcional ao container)
+            const BASE = 1.6;   // vw — ~24px no bulbo real
+            const size = on ? BASE * burst : BASE * 0.6;
+
+            return (
+              <span
+                key={i}
+                style={{
+                  position:     "absolute",
+                  top:          `${l.top}%`,
+                  left:         `${l.left}%`,
+                  transform:    "translate(-50%, -50%)",
+                  display:      "block",
+                  width:        `${size}vw`,
+                  height:       `${size}vw`,
+                  borderRadius: "50%",
+                  background:   on ? l.color : "rgba(0,0,0,0.3)",
+                  boxShadow:    on
+                    ? `
+                        0 0 ${size * 0.5}vw  ${size * 0.3}vw ${l.glow}FF,
+                        0 0 ${size * 1.5}vw  ${size * 0.8}vw ${l.glow}CC,
+                        0 0 ${size * 3.5}vw  ${size * 1.8}vw ${l.glow}77,
+                        0 0 ${size * 7}vw    ${size * 4}vw   ${l.glow}33
+                      `
+                    : "none",
+                  opacity:      on ? 1 : 0.4,
+                  transition:   on ? "none" : "opacity 0.1s",
+                  zIndex:       2,
+                  pointerEvents: "none",
+                }}
+              />
+            );
+          })}
         </div>
       )}
 
-      {/* ── Christmas tree lights ── */}
-      {elapsed < FADE_END && LIGHTS.map((l, i) => {
-        const on = elapsed >= l.ms;
-        // flash on ignition
-        const flashAge  = elapsed - l.ms;
-        const flashBoost = on && flashAge < 120
-          ? 1 + (1 - flashAge / 120) * 1.5   // size multiplier burst
-          : 1;
-
-        return (
-          <span
-            key={i}
-            style={{
-              position:     "absolute",
-              top:          `${l.top}%`,
-              left:         `${l.left}%`,
-              transform:    "translate(-50%, -50%)",
-              width:        on ? l.size * flashBoost : l.size * 0.7,
-              height:       on ? l.size * flashBoost : l.size * 0.7,
-              borderRadius: "50%",
-              background:   on ? l.color : "rgba(0,0,0,0.4)",
-              boxShadow:    on
-                ? `0 0 ${l.size * 2}px ${l.size * 0.8}px ${l.bloom}CC,
-                   0 0 ${l.size * 5}px ${l.size * 2}px ${l.bloom}55`
-                : "none",
-              opacity:    on ? 1 : 0.35,
-              transition: on ? "none" : "all 0.12s ease-out",
-              zIndex:     2,
-              pointerEvents: "none",
-            }}
-          />
-        );
-      })}
-
-      {/* ── Fade-to-black overlay ── */}
+      {/* ── Overlay fade para preto ── */}
       {fadeBlack > 0 && (
-        <div style={{
-          position: "absolute",
-          inset:    0,
-          background: "#000",
-          opacity:  fadeBlack,
-          zIndex:   3,
-        }} />
+        <div
+          style={{
+            position:   "absolute",
+            inset:      0,
+            background: "#000",
+            opacity:    fadeBlack,
+            zIndex:     3,
+          }}
+        />
       )}
 
-      {/* ── Fedullo logo (large, centered) ── */}
-      {logoOpacity > 0.01 && (
-        <div style={{
-          position:       "absolute",
-          inset:          0,
-          display:        "flex",
-          alignItems:     "center",
-          justifyContent: "center",
-          zIndex:         4,
-          opacity:        logoOpacity,
-        }}>
+      {/* ── Logo Fedullo (grande, centralizado) ── */}
+      {logoAlpha > 0.01 && (
+        <div
+          style={{
+            position:        "absolute",
+            inset:           0,
+            display:         "flex",
+            alignItems:      "center",
+            justifyContent:  "center",
+            zIndex:          4,
+            opacity:         logoAlpha,
+          }}
+        >
           <Image
             src="/fedullo.png"
             alt="Fedullo"
             width={600}
             height={350}
-            style={{ width: "clamp(260px, 55vw, 600px)", height: "auto" }}
+            style={{ width: "clamp(280px, 58vw, 640px)", height: "auto" }}
             priority
           />
         </div>
       )}
 
-      {/* ── TV scan-line glow (visible during collapse) ── */}
+      {/* ── Linha de brilho efeito TV ── */}
       {elapsed >= TV_START && tvGlow > 0.02 && (
-        <div style={{
-          position:  "absolute",
-          top:       "50%",
-          left:      0,
-          right:     0,
-          height:    3,
-          background: "#fff",
-          boxShadow: `0 0 60px 30px rgba(255,255,255,${(tvGlow * 0.95).toFixed(2)}),
-                      0 0 120px 60px rgba(255,255,255,${(tvGlow * 0.4).toFixed(2)})`,
-          transform: "translateY(-50%)",
-          zIndex:    5,
-          pointerEvents: "none",
-        }} />
+        <div
+          style={{
+            position:   "absolute",
+            top:        "50%",
+            left:       0,
+            right:      0,
+            height:     3,
+            background: "#fff",
+            boxShadow:  `
+              0 0 60px  30px rgba(255,255,255,${(tvGlow * 0.95).toFixed(2)}),
+              0 0 120px 60px rgba(255,255,255,${(tvGlow * 0.45).toFixed(2)})
+            `,
+            transform:  "translateY(-50%)",
+            zIndex:     5,
+            pointerEvents: "none",
+          }}
+        />
       )}
     </div>
   );
