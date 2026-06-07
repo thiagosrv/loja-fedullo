@@ -13,31 +13,31 @@ const px = (x: number, dim: number) => +(x / dim * 100).toFixed(4);
 // ─── Posições exatas das luzes (coordenadas em pixels na imagem original) ──────
 const LIGHTS = [
   // ── Laranja par 1 ──
-  { left: px(721, IMG_W), top: px(279, IMG_H), color: "#f97316", glow: "#f97316", ms:    0 },
-  { left: px(806, IMG_W), top: px(279, IMG_H), color: "#f97316", glow: "#f97316", ms:    0 },
+  { left: px(721, IMG_W), top: px(279, IMG_H), color: "#f97316", glow: "#f97316", ms:   0 },
+  { left: px(806, IMG_W), top: px(279, IMG_H), color: "#f97316", glow: "#f97316", ms:   0 },
   // ── Laranja par 2 ──
-  { left: px(720, IMG_W), top: px(325, IMG_H), color: "#f97316", glow: "#f97316", ms:  380 },
-  { left: px(805, IMG_W), top: px(325, IMG_H), color: "#f97316", glow: "#f97316", ms:  380 },
+  { left: px(720, IMG_W), top: px(325, IMG_H), color: "#f97316", glow: "#f97316", ms: 220 },
+  { left: px(805, IMG_W), top: px(325, IMG_H), color: "#f97316", glow: "#f97316", ms: 220 },
   // ── Laranja par 3 ──
-  { left: px(721, IMG_W), top: px(371, IMG_H), color: "#f97316", glow: "#f97316", ms:  760 },
-  { left: px(805, IMG_W), top: px(371, IMG_H), color: "#f97316", glow: "#f97316", ms:  760 },
+  { left: px(721, IMG_W), top: px(371, IMG_H), color: "#f97316", glow: "#f97316", ms: 440 },
+  { left: px(805, IMG_W), top: px(371, IMG_H), color: "#f97316", glow: "#f97316", ms: 440 },
   // ── Verde ──
-  { left: px(721, IMG_W), top: px(416, IMG_H), color: "#22c55e", glow: "#22c55e", ms: 1180 },
-  { left: px(804, IMG_W), top: px(414, IMG_H), color: "#22c55e", glow: "#22c55e", ms: 1180 },
+  { left: px(721, IMG_W), top: px(416, IMG_H), color: "#22c55e", glow: "#22c55e", ms: 680 },
+  { left: px(804, IMG_W), top: px(414, IMG_H), color: "#22c55e", glow: "#22c55e", ms: 680 },
   // ── Vermelho ──
-  { left: px(720, IMG_W), top: px(462, IMG_H), color: "#ef4444", glow: "#ef4444", ms: 1560 },
-  { left: px(804, IMG_W), top: px(463, IMG_H), color: "#ef4444", glow: "#ef4444", ms: 1560 },
+  { left: px(720, IMG_W), top: px(462, IMG_H), color: "#ef4444", glow: "#ef4444", ms: 920 },
+  { left: px(804, IMG_W), top: px(463, IMG_H), color: "#ef4444", glow: "#ef4444", ms: 920 },
 ] as const;
 
 // ─── Timings (ms) ─────────────────────────────────────────────────────────────
-const FADE_START   = 1800;   // fade para preto começa
-const FADE_END     = 2250;   // totalmente preto
-const LOGO_IN      = 2300;   // logo aparece
-const LOGO_PEAK    = 2650;   // logo totalmente visível
-const LOGO_OUT     = 3200;   // logo começa a sumir
-const LOGO_GONE    = 3550;   // logo invisível → smoke imediato
-const SMOKE_START  = 3550;   // efeito smoke começa
-const SMOKE_END    = 4380;   // smoke termina → site abre
+const FADE_START   = 1050;   // fade para preto começa
+const FADE_END     = 1380;   // totalmente preto
+const LOGO_IN      = 1400;   // logo aparece
+const LOGO_PEAK    = 1650;   // logo totalmente visível
+const LOGO_OUT     = 1850;   // logo começa a sumir
+const LOGO_GONE    = 2050;   // logo invisível → smoke imediato
+const SMOKE_START  = 2050;   // efeito smoke começa
+const SMOKE_END    = 2650;   // smoke termina → site abre
 
 function easeOut(t: number)  { return 1 - Math.pow(1 - t, 3); }
 function easeOut2(t: number) { return 1 - Math.pow(1 - t, 2); } // mais suave
@@ -134,7 +134,7 @@ export function LoadingScreen() {
           >
             {/* Foto do semáforo */}
             <Image
-              src="/loading.png"
+              src="/loading.webp"
               alt=""
               fill
               sizes="100vw"

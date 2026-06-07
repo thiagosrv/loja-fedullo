@@ -10,15 +10,18 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { Product } from "@/types/product";
 
+const INCLUDE = {
+  category: true,
+  images: { orderBy: { position: "asc" as const }, take: 1 },
+  brands: { include: { brand: true } },
+  tags:   { include: { tag: true } },
+};
+
 async function getFeaturedProducts(): Promise<Product[]> {
   try {
     return await db.product.findMany({
       where: { active: true, featured: true },
-      include: {
-        category: true,
-        images: { orderBy: { position: "asc" } },
-        brands: { include: { brand: true } },
-      },
+      include: INCLUDE,
       orderBy: { createdAt: "desc" },
       take: 8,
     }) as unknown as Product[];
@@ -32,11 +35,7 @@ async function getLatestProducts(): Promise<Product[]> {
   try {
     return await db.product.findMany({
       where: { active: true },
-      include: {
-        category: true,
-        images: { orderBy: { position: "asc" } },
-        brands: { include: { brand: true } },
-      },
+      include: INCLUDE,
       orderBy: { createdAt: "desc" },
       take: 8,
     }) as unknown as Product[];
