@@ -88,22 +88,32 @@ export function LoadingScreen() {
       }}
     >
       {/* ══════════════════════════════════════════════
-          Container com aspect-ratio EXATO da imagem
-          (1536 × 1024 → 3:2).
-          Posicionado no topo-esquerdo, largura = 100vw.
-          Na maioria dos desktops (16:9) a base extrapola
-          o viewport — o overflow: hidden acima corta.
-          As luzes são filhas deste container, por isso
-          o % bate exatamente nos pixels originais.
+          Container que cobre o viewport inteiro em
+          QUALQUER orientação mantendo proporção 3:2.
+
+          Landscape desktop (1920×1080):
+            width  = max(1920vw, 150×1080/100) = max(1920,1620) = 1920px ✓
+            height = max(1080, 66.67×1920/100) = max(1080,1280) = 1280px
+            → base é cortada pelo overflow:hidden da raiz
+
+          Portrait mobile (390×844):
+            width  = max(390, 150×844/100) = max(390,1266) = 1266px
+            height = max(844, 66.67×390/100) = max(844,260) = 844px ✓
+            → lados cortados
+
+          Em ambos os casos as luzes em % do container
+          batem com os pixels originais da imagem 3:2.
       ══════════════════════════════════════════════ */}
       {elapsed < FADE_END + 50 && (
         <div
           style={{
-            position:    "absolute",
-            top:         0,
-            left:        0,
-            width:       "100vw",
-            aspectRatio: `${IMG_W} / ${IMG_H}`,   // CSS nativo
+            position:  "absolute",
+            top:       "50%",
+            left:      "50%",
+            transform: "translate(-50%, -50%)",
+            // Garante cobertura total em portrait (mobile) e landscape (desktop)
+            width:  "max(100vw, 150svh)",
+            height: "max(100svh, 66.667vw)",
           }}
         >
           {/* Foto do semáforo */}

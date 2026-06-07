@@ -38,8 +38,8 @@ export default async function ProductPage({ params }: Props) {
   const mainImage = product.images[0];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* Image */}
         <div className="relative aspect-square rounded-[8px] bg-[#111111] border border-[#1f1f1f] overflow-hidden">
           {mainImage ? (
@@ -66,7 +66,7 @@ export default async function ProductPage({ params }: Props) {
                 {product.category.name}
               </span>
             </div>
-            <h1 className="text-3xl font-bold text-white">{product.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight">{product.name}</h1>
             {product.sku && (
               <p className="text-xs text-[#4a4a4a] mt-1">SKU: {product.sku}</p>
             )}
@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: Props) {
 
           {/* Price */}
           <div className="flex items-baseline gap-3">
-            <PriceDisplay cents={product.price} className="text-4xl font-bold text-white" />
+            <PriceDisplay cents={product.price} className="text-3xl sm:text-4xl font-bold text-white" />
           </div>
 
           {/* Description */}
@@ -115,7 +115,7 @@ export default async function ProductPage({ params }: Props) {
           <AddToCartButton product={product} />
 
           {/* Trust badges */}
-          <div className="flex flex-wrap gap-4 pt-2">
+          <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
             {["Compra Segura", "Frete Calculado", "Nota Fiscal"].map((item) => (
               <div key={item} className="flex items-center gap-1.5">
                 <div className="w-1 h-1 rounded-full bg-[#dc2626]" />

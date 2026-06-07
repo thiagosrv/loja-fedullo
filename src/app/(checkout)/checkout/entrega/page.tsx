@@ -53,10 +53,10 @@ export default function CheckoutStep2() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
       <CheckoutStepper current={2} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-4">
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div className="rounded-[8px] border border-[#1f1f1f] bg-[#111111] p-6">
             <h2 className="text-base font-semibold text-white mb-1">Opções de Entrega</h2>

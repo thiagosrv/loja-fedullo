@@ -26,13 +26,21 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  /* Remove tap highlight on iOS/Android */
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
   font-feature-settings: "ss03";
-  scroll-behavior: smooth;
+  /* iOS: prevent font inflation on landscape rotation */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   /* Prevent layout shift while GSAP hides/shows header */
   overflow-x: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
 }
 
 body {
@@ -41,7 +49,18 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal overflow on mobile */
+  overflow-x: hidden;
 }
+
+/* Minimum touch target size */
+button, [role="button"], a {
+  touch-action: manipulation;
+}
+
+/* iOS safe-area utilities */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.pt-safe { padding-top:    env(safe-area-inset-top,    0px); }
 
 /* Hero blob animation */
 @keyframes hero-blob {

@@ -61,10 +61,10 @@ export default function CheckoutStep1() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
       <CheckoutStepper current={1} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-4">
         {/* Form */}
         <form onSubmit={handleSubmit} className="lg:col-span-2 flex flex-col gap-6">
           {/* Personal data */}

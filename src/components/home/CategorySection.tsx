@@ -56,12 +56,12 @@ export function CategorySection() {
         <h2 className="text-2xl sm:text-3xl font-bold text-white">Explore por Categoria</h2>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {CATEGORIES.map((cat) => (
           <Link
             key={cat.slug}
             href={`/${cat.slug}`}
-            className="group relative flex flex-col items-start justify-end p-6 h-36 rounded-[8px] border border-[#1f1f1f] bg-[#111111] overflow-hidden hover:border-[#333] transition-all duration-300"
+            className="group relative flex flex-col items-start justify-end p-4 sm:p-6 h-32 sm:h-36 rounded-[8px] border border-[#1f1f1f] bg-[#111111] overflow-hidden hover:border-[#333] active:border-[#333] transition-all duration-300"
           >
             {/* Icon — top right, fades down on hover */}
             <div className="absolute top-5 right-5 text-white/20 group-hover:text-white/35 transition-colors duration-300">

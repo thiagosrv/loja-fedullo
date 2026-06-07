@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { LoadingScreen } from "@/components/layout/LoadingScreen";
@@ -8,6 +8,13 @@ const inter = Inter({
   variable: "--font-sans",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,        // permite zoom de acessibilidade
+  viewportFit: "cover",  // suporte a notch/safe-area no iOS
+};
 
 export const metadata: Metadata = {
   title: {

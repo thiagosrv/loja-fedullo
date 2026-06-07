@@ -11,7 +11,7 @@ export function Footer() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {/* Brand */}
+          {/* Brand — full width on mobile */}
           <div className="col-span-2 md:col-span-1">
             <Image src="/fedullo.png" alt="Fedullo" width={100} height={26} className="h-7 w-auto mb-1" />
             <p className="text-[9px] font-semibold tracking-[0.22em] text-[#dc2626] uppercase mb-4">
@@ -50,8 +50,8 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Conta */}
-          <div>
+          {/* Conta — full width no mobile para não ficar ímpar */}
+          <div className="col-span-2 md:col-span-1">
             <h3 className="text-xs font-semibold uppercase tracking-widest text-[#9ca3af] mb-4">Conta</h3>
             <ul className="space-y-2">
               {[
@@ -69,12 +69,12 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-[#1f1f1f] flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-[#4a4a4a]">
+        <div className="mt-10 pt-6 border-t border-[#1f1f1f] flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-xs text-[#4a4a4a] text-center sm:text-left">
             © {new Date().getFullYear()} Fedullo Motorsport Wiring. Todos os direitos reservados.
           </p>
-          <p className="text-xs text-[#4a4a4a]">
-            Pagamentos processados por{" "}
+          <p className="text-xs text-[#4a4a4a] text-center sm:text-right">
+            Pagamentos por{" "}
             <span className="text-[#9ca3af]">Stripe</span>
           </p>
         </div>
