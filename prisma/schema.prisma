@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  cpf          String?   @unique
+  phone        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  addresses Address[]
+  orders    Order[]
+}
+
+model Address {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  name        String
+  cep         String
+  logradouro  String
+  numero      String
+  complemento String?
+  bairro      String
+  cidade      String
+  estado      String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  products    Product[]
+}
+
+model Brand {
+  id       String         @id @default(cuid())
+  name     String
+  slug     String         @unique
+  logoUrl  String?
+  products ProductBrand[]
+}
+
+model Product {
+  id          String         @id @default(cuid())
+  name        String
+  slug        String         @unique
+  description String
+  price       Int
+  salePrice   Int?
+  onSale      Boolean        @default(false)
+  saleEndsAt  DateTime?
+  stock       Int            @default(0)
+  sku         String?        @unique
+  featured    Boolean        @default(false)
+  active      Boolean        @default(true)
+  categoryId  String
+  category    Category       @relation(fields: [categoryId], references: [id])
+  images      ProductImage[]
+  brands      ProductBrand[]
+  orderItems  OrderItem[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  position  Int     @default(0)
+}
+
+model ProductBrand {
+  productId String
+  brandId   String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  brand     Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@id([productId, brandId])
+}
+
+model Order {
+  id                  String       @id @default(cuid())
+  userId              String?
+  user                User?        @relation(fields: [userId], references: [id])
+  guestEmail          String?
+  status              OrderStatus  @default(PENDING)
+  subtotalCents       Int
+  shippingCents       Int
+  totalCents          Int
+  shippingMethod      String
+  shippingRegion      String
+  stripePaymentIntent String?
+  paidAt              DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  shippingAddress OrderAddress?
+  items           OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+model OrderAddress {
+  id          String @id @default(cuid())
+  orderId     String @unique
+  order       Order  @relation(fields: [orderId], references: [id])
+  name        String
+  cep         String
+  logradouro  String
+  numero      String
+  complemento String?
+  bairro      String
+  cidade      String
+  estado      String
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  order          Order   @relation(fields: [orderId], references: [id])
+  productId      String
+  product        Product @relation(fields: [productId], references: [id])
+  quantity       Int
+  unitPriceCents Int
+  productName    String
+  productSku     String?
+}
+
+model Coupon {
+  id            String     @id @default(cuid())
+  code          String     @unique
+  description   String?
+  type          CouponType
+  value         Int
+  minOrderCents Int?
+  maxUsage      Int?
+  usageCount    Int        @default(0)
+  active        Boolean    @default(true)
+  expiresAt     DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
