@@ -21,7 +21,14 @@ export function Header() {
   const borderRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const totalItems = useCartStore((s) => s.totalItems());
+  // SSR safety: Zustand persist lê localStorage só no cliente.
+  // Usar 0 no servidor evita hydration mismatch.
+  const displayCount = mounted ? totalItems : 0;
+
+  /* ── Marca montagem no cliente (evita hydration mismatch no cart) ── */
+  useEffect(() => { setMounted(true); }, []);
 
   /* ── Register ScrollTrigger ── */
   useEffect(() => {
@@ -134,16 +141,16 @@ export function Header() {
         <Link
           ref={cartRef}
           href="/carrinho"
-          aria-label={`Carrinho${totalItems > 0 ? ` (${totalItems})` : ""}`}
+          aria-label={`Carrinho${displayCount > 0 ? ` (${displayCount})` : ""}`}
           className="relative flex items-center justify-center w-11 h-11 rounded-full hover:bg-white/5 transition-colors duration-200"
         >
           <ShoppingBag size={17} strokeWidth={1.4} className="text-white" />
-          {totalItems > 0 && (
+          {displayCount > 0 && (
             <span
               className="absolute -top-0.5 -right-0.5 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#dc2626] text-white leading-none"
               style={{ fontSize: "8.5px", fontWeight: 700 }}
             >
-              {totalItems > 9 ? "9+" : totalItems}
+              {displayCount > 9 ? "9+" : displayCount}
             </span>
           )}
         </Link>
