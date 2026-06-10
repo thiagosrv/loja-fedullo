@@ -13,8 +13,9 @@ export default async function ChicotesPage() {
     where: { active: true, category: { slug: "chicotes" } },
     include: {
       category: true,
-      images: { orderBy: { position: "asc" } },
+      images: { orderBy: { position: "asc" }, take: 1 },
       brands: { include: { brand: true } },
+      tags:   { include: { tag: true } },
     },
     orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
   })) as unknown as Product[];

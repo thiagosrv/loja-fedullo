@@ -50,6 +50,9 @@ export function LoadingScreen() {
   const startRef = useRef<number>(0);
 
   useEffect(() => {
+    // Define o cookie para que no próximo carregamento o layout ignore a tela de loading
+    document.cookie = "fedullo_visited=true; path=/; max-age=31536000; SameSite=Lax";
+
     startRef.current = performance.now();
     const tick = (now: number) => {
       const ms = now - startRef.current;

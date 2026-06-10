@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { LoadingScreen } from "@/components/layout/LoadingScreen";
 
@@ -34,15 +35,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const hasVisited = cookieStore.get("fedullo_visited")?.value === "true";
+
   return (
     <html lang="pt-BR" className={`${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-[#000] text-white antialiased" suppressHydrationWarning>
-        <LoadingScreen />
+        {!hasVisited && <LoadingScreen />}
         {children}
       </body>
     </html>

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       tags: { include: { tag: true } },
     };
 
-    let related = [];
+    let related: any[] = [];
 
     // 1ª opção: mesma marca, categoria diferente
     if (brandIds.length > 0) {
