@@ -107,7 +107,7 @@ export function HeroBanner() {
         >
           Engenharia elétrica
           <br />
-          <span className="text-white/50 font-light">de corrida.</span>
+          <span className="text-white/50 font-light">de corrida</span>
         </h1>
 
         {/* Sub copy */}
@@ -119,29 +119,45 @@ export function HeroBanner() {
         </p>
 
         {/* CTA */}
-        <div ref={ctaRef} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto max-w-xs sm:max-w-none">
+        <div ref={ctaRef} className="flex items-center justify-center">
           <Link
             href="/chicotes"
-            className="inline-flex items-center justify-center h-12 sm:h-11 px-8 rounded-[8px] bg-[#dc2626] text-white text-sm font-semibold tracking-wide hover:bg-[#b91c1c] active:bg-[#b91c1c] transition-colors duration-200"
+            className="inline-flex items-center justify-center h-12 sm:h-11 px-10 rounded-[8px] bg-[#dc2626] text-white text-sm font-semibold tracking-wide hover:bg-[#b91c1c] active:bg-[#b91c1c] transition-colors duration-200"
           >
             Explorar Produtos
-          </Link>
-          <Link
-            href="/marcas"
-            className="inline-flex items-center justify-center h-12 sm:h-11 px-8 rounded-[8px] border border-white/10 text-white/60 text-sm font-medium tracking-wide hover:border-white/25 hover:text-white/90 active:border-white/25 active:text-white/90 transition-colors duration-200"
-          >
-            Por Marca
           </Link>
         </div>
       </div>
 
-      {/* ── Scroll indicator ── */}
+      {/* ── Scroll indicator — seta pulsante ── */}
       <div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         style={{ zIndex: 4 }}
       >
-        <span className="text-[9px] tracking-[0.3em] text-white uppercase">Scroll</span>
-        <div className="w-px h-8 bg-gradient-to-b from-white/60 to-transparent" />
+        <span className="text-[8px] tracking-[0.35em] text-white/30 uppercase font-medium">Scroll</span>
+        <svg
+          width="16"
+          height="24"
+          viewBox="0 0 16 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="animate-scroll-arrow"
+          aria-hidden="true"
+        >
+          <path
+            d="M8 2 L8 18"
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M2 13 L8 20 L14 13"
+            stroke="rgba(255,255,255,0.25)"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </div>
 
     </section>

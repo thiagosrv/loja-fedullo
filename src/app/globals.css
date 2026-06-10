@@ -82,6 +82,23 @@ button, [role="button"], a {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Scroll arrow — fade + gentle downward drift, loops forever */
+@keyframes scroll-arrow {
+  0%   { opacity: 0;    transform: translateY(-6px); }
+  30%  { opacity: 1;    transform: translateY(0px);  }
+  70%  { opacity: 1;    transform: translateY(0px);  }
+  100% { opacity: 0;    transform: translateY(6px);  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-scroll-arrow {
+    animation: scroll-arrow 2.2s ease-in-out infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-scroll-arrow { opacity: 0.25; }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
