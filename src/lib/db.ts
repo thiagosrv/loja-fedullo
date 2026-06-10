@@ -6,10 +6,18 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  const isProduction = process.env.NODE_ENV === "production";
+
+  const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL!,
+    // Supabase exige SSL em produção; max:1 evita esgotar conexões no serverless
+    ssl: isProduction ? { rejectUnauthorized: false } : false,
+    max: isProduction ? 1 : 5,
+  });
+
   return new PrismaClient({
     adapter,
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    log: isProduction ? ["error"] : ["error", "warn"],
   });
 }
 
