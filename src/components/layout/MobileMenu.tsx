@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogIn } from "lucide-react";
 import { CATEGORIES } from "@/constants/categories";
 import { CAR_BRANDS } from "@/constants/brands";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const [brandsOpen, setBrandsOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   /* Trava o scroll da página enquanto o drawer está aberto */
   useEffect(() => {
@@ -102,6 +104,38 @@ export function MobileMenu() {
             </div>
           )}
         </nav>
+
+        {/* Account section */}
+        <div className="absolute bottom-0 left-0 right-0 border-t border-[#1f1f1f] p-4">
+          {user ? (
+            <div className="flex flex-col gap-1">
+              <Link
+                href="/conta"
+                onClick={close}
+                className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-[#9ca3af] hover:text-white hover:bg-[#1a1a1a] rounded-[8px] transition-colors"
+              >
+                <User size={15} />
+                Minha Conta
+              </Link>
+              <button
+                onClick={() => { close(); signOut(); }}
+                className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-[#6b7280] hover:text-[#dc2626] hover:bg-[#dc2626]/5 rounded-[8px] transition-colors w-full text-left"
+              >
+                <LogIn size={15} className="rotate-180" />
+                Sair
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              onClick={close}
+              className="flex items-center gap-3 px-3 py-3 text-sm font-medium text-[#9ca3af] hover:text-white hover:bg-[#1a1a1a] rounded-[8px] transition-colors"
+            >
+              <LogIn size={15} />
+              Entrar / Criar conta
+            </Link>
+          )}
+        </div>
       </div>
     </>
   );

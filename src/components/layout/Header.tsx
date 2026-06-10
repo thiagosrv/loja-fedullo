@@ -8,6 +8,7 @@ import { BrandsSubmenu } from "./BrandsSubmenu";
 import { MobileMenu } from "./MobileMenu";
 import { CATEGORIES } from "@/constants/categories";
 import { ShoppingBag } from "lucide-react";
+import { UserMenu } from "./UserMenu";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -52,7 +53,7 @@ export function Header() {
     tl.to(header, { autoAlpha: 1, y: 0, duration: 0.75 })
       .to(logo, { autoAlpha: 1, duration: 0.45 }, "-=0.45")
       .to(navItems, { autoAlpha: 1, y: 0, stagger: 0.07, duration: 0.4 }, "-=0.35")
-      .to(cart, { autoAlpha: 1, duration: 0.35 }, "-=0.3");
+      .to(cart, { autoAlpha: 1, duration: 0.35 }, "-=0.35");
 
     return () => { tl.kill(); };
   }, []);
@@ -137,23 +138,28 @@ export function Header() {
           <BrandsSubmenu />
         </nav>
 
-        {/* Cart */}
-        <Link
-          ref={cartRef}
-          href="/carrinho"
-          aria-label={`Carrinho${displayCount > 0 ? ` (${displayCount})` : ""}`}
-          className="relative flex items-center justify-center w-11 h-11 rounded-full hover:bg-white/5 transition-colors duration-200"
-        >
-          <ShoppingBag size={17} strokeWidth={1.4} className="text-white" />
-          {displayCount > 0 && (
-            <span
-              className="absolute -top-0.5 -right-0.5 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#dc2626] text-white leading-none"
-              style={{ fontSize: "8.5px", fontWeight: 700 }}
-            >
-              {displayCount > 9 ? "9+" : displayCount}
-            </span>
-          )}
-        </Link>
+        {/* Right actions */}
+        <div className="flex items-center gap-1">
+          <UserMenu />
+
+          {/* Cart */}
+          <Link
+            ref={cartRef}
+            href="/carrinho"
+            aria-label={`Carrinho${displayCount > 0 ? ` (${displayCount})` : ""}`}
+            className="relative flex items-center justify-center w-11 h-11 rounded-full hover:bg-white/5 transition-colors duration-200"
+          >
+            <ShoppingBag size={17} strokeWidth={1.4} className="text-white" />
+            {displayCount > 0 && (
+              <span
+                className="absolute -top-0.5 -right-0.5 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#dc2626] text-white leading-none"
+                style={{ fontSize: "8.5px", fontWeight: 700 }}
+              >
+                {displayCount > 9 ? "9+" : displayCount}
+              </span>
+            )}
+          </Link>
+        </div>
       </div>
 
       {/* Hairline border — fades in on scroll */}

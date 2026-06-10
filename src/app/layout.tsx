@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { LoadingScreen } from "@/components/layout/LoadingScreen";
+import { AuthProvider } from "@/context/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,7 +48,7 @@ export default async function RootLayout({
     <html lang="pt-BR" className={`${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-[#000] text-white antialiased" suppressHydrationWarning>
         {!hasVisited && <LoadingScreen />}
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
