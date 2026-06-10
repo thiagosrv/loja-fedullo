@@ -10,7 +10,7 @@ export function Footer() {
       <div className="h-px bg-gradient-to-r from-transparent via-[#dc2626] to-transparent opacity-40" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {/* Brand — full width on mobile */}
           <div className="col-span-2 md:col-span-1">
             <Image src="/fedullo.png" alt="Fedullo" width={100} height={26} className="h-7 w-auto mb-1" />

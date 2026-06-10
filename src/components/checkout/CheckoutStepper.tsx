@@ -2,9 +2,9 @@ import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
 const STEPS = [
-  { number: 1, label: "Identificação" },
-  { number: 2, label: "Entrega" },
-  { number: 3, label: "Pagamento" },
+  { number: 1, label: "Identificação", short: "Dados" },
+  { number: 2, label: "Entrega", short: "Entrega" },
+  { number: 3, label: "Pagamento", short: "Pagamento" },
 ];
 
 interface CheckoutStepperProps {
@@ -13,7 +13,7 @@ interface CheckoutStepperProps {
 
 export function CheckoutStepper({ current }: CheckoutStepperProps) {
   return (
-    <div className="flex items-center justify-center gap-0 py-6">
+    <div className="flex items-center justify-center gap-0 py-5 sm:py-6">
       {STEPS.map((step, i) => {
         const done = step.number < current;
         const active = step.number === current;
@@ -32,13 +32,15 @@ export function CheckoutStepper({ current }: CheckoutStepperProps) {
               >
                 {done ? <Check size={14} /> : step.number}
               </div>
+              {/* Short label on mobile, full label on sm+ */}
               <span
                 className={cn(
-                  "text-xs whitespace-nowrap transition-colors duration-200",
+                  "text-[10px] sm:text-xs whitespace-nowrap transition-colors duration-200",
                   active ? "text-white font-medium" : done ? "text-[#9ca3af]" : "text-[#4a4a4a]"
                 )}
               >
-                {step.label}
+                <span className="sm:hidden">{step.short}</span>
+                <span className="hidden sm:inline">{step.label}</span>
               </span>
             </div>
 
@@ -46,7 +48,7 @@ export function CheckoutStepper({ current }: CheckoutStepperProps) {
             {i < STEPS.length - 1 && (
               <div
                 className={cn(
-                  "w-16 sm:w-24 h-px mx-3 mb-5 transition-colors duration-200",
+                  "w-10 sm:w-20 h-px mx-2 sm:mx-3 mb-5 transition-colors duration-200",
                   done ? "bg-[#dc2626]" : "bg-[#1f1f1f]"
                 )}
               />

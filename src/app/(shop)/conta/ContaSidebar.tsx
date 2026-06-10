@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const NAV = [
   { href: "/conta", label: "Visão Geral", icon: LayoutDashboard, exact: true },
-  { href: "/conta/pedidos", label: "Meus Pedidos", icon: ShoppingBag, exact: false },
+  { href: "/conta/pedidos", label: "Pedidos", icon: ShoppingBag, exact: false },
   { href: "/conta/enderecos", label: "Endereços", icon: MapPin, exact: false },
   { href: "/conta/dados", label: "Meus Dados", icon: User2, exact: false },
 ];
@@ -25,50 +25,99 @@ export function ContaSidebar({ name, email }: Props) {
   const initial = name.charAt(0).toUpperCase();
 
   return (
-    <aside className="lg:w-60 flex-shrink-0">
-      {/* User card */}
-      <div className="rounded-[10px] border border-[#1f1f1f] bg-[#0d0d0d] p-5 mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#dc2626] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+    <>
+      {/* ── Mobile: compact horizontal tab bar ── */}
+      <div className="lg:hidden">
+        {/* User row */}
+        <div className="flex items-center gap-3 px-1 mb-3">
+          <div className="w-9 h-9 rounded-full bg-[#dc2626] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
             {initial}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white truncate">{name}</p>
             <p className="text-xs text-[#6b7280] truncate">{email}</p>
           </div>
+          <button
+            onClick={signOut}
+            className="ml-auto flex items-center gap-1.5 text-xs text-[#6b7280] hover:text-[#dc2626] transition-colors flex-shrink-0 cursor-pointer"
+            aria-label="Sair"
+          >
+            <LogOut size={13} />
+            Sair
+          </button>
+        </div>
+
+        {/* Horizontal scrollable tabs */}
+        <div
+          className="flex gap-1 overflow-x-auto pb-2 border-b border-[#1f1f1f]"
+          style={{ scrollbarWidth: "none" }}
+        >
+          {NAV.map(({ href, label, icon: Icon, exact }) => {
+            const active = exact ? pathname === href : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2.5 rounded-[8px] text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0",
+                  active
+                    ? "bg-[#dc2626]/10 text-[#dc2626] border border-[#dc2626]/30"
+                    : "text-[#9ca3af] hover:text-white hover:bg-[#1a1a1a] border border-transparent"
+                )}
+              >
+                <Icon size={13} />
+                {label}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="rounded-[10px] border border-[#1f1f1f] bg-[#0d0d0d] overflow-hidden">
-        {NAV.map(({ href, label, icon: Icon, exact }) => {
-          const active = exact ? pathname === href : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-colors border-b border-[#1a1a1a] last:border-0",
-                active
-                  ? "text-white bg-[#1a1a1a] border-l-2 border-l-[#dc2626] pl-[14px]"
-                  : "text-[#9ca3af] hover:text-white hover:bg-[#141414]"
-              )}
-            >
-              <Icon size={15} className={active ? "text-[#dc2626]" : "text-[#4a4a4a]"} />
-              {label}
-            </Link>
-          );
-        })}
+      {/* ── Desktop: vertical sidebar ── */}
+      <aside className="hidden lg:block lg:w-60 flex-shrink-0">
+        {/* User card */}
+        <div className="rounded-[10px] border border-[#1f1f1f] bg-[#0d0d0d] p-5 mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#dc2626] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+              {initial}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{name}</p>
+              <p className="text-xs text-[#6b7280] truncate">{email}</p>
+            </div>
+          </div>
+        </div>
 
-        {/* Logout */}
-        <button
-          onClick={signOut}
-          className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-[#6b7280] hover:text-[#dc2626] hover:bg-[#141414] transition-colors"
-        >
-          <LogOut size={15} />
-          Sair
-        </button>
-      </nav>
-    </aside>
+        {/* Nav */}
+        <nav className="rounded-[10px] border border-[#1f1f1f] bg-[#0d0d0d] overflow-hidden">
+          {NAV.map(({ href, label, icon: Icon, exact }) => {
+            const active = exact ? pathname === href : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-colors border-b border-[#1a1a1a] last:border-0",
+                  active
+                    ? "text-white bg-[#1a1a1a] border-l-2 border-l-[#dc2626] pl-[14px]"
+                    : "text-[#9ca3af] hover:text-white hover:bg-[#141414]"
+                )}
+              >
+                <Icon size={15} className={active ? "text-[#dc2626]" : "text-[#4a4a4a]"} />
+                {label}
+              </Link>
+            );
+          })}
+
+          <button
+            onClick={signOut}
+            className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-[#6b7280] hover:text-[#dc2626] hover:bg-[#141414] transition-colors cursor-pointer"
+          >
+            <LogOut size={15} />
+            Sair
+          </button>
+        </nav>
+      </aside>
+    </>
   );
 }

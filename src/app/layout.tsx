@@ -14,8 +14,9 @@ const inter = Inter({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,        // permite zoom de acessibilidade
-  viewportFit: "cover",  // suporte a notch/safe-area no iOS
+  maximumScale: 5,           // permite zoom de acessibilidade
+  viewportFit: "cover",     // suporte a notch/safe-area no iOS
+  interactiveWidget: "resizes-visual", // teclado virtual não move o layout
 };
 
 export const metadata: Metadata = {

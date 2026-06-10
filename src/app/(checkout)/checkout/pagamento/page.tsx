@@ -68,20 +68,19 @@ export default function CheckoutStep3() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-28 lg:pb-6">
       <CheckoutStepper current={3} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-4">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* Payment placeholder — Stripe keys to be configured */}
-          <div className="rounded-[8px] border border-[#1f1f1f] bg-[#111111] p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-2">
+        <div className="lg:col-span-2 flex flex-col gap-5">
+          {/* Payment placeholder */}
+          <div className="rounded-[8px] border border-[#1f1f1f] bg-[#111111] p-4 sm:p-6">
             <h2 className="text-base font-semibold text-white mb-1">Pagamento</h2>
             <p className="text-xs text-[#9ca3af] mb-6">
               Processado com segurança pelo Stripe
             </p>
 
-            {/* Stripe Element placeholder */}
-            <div className="rounded-[8px] border border-dashed border-[#2a2a2a] bg-[#0a0a0a] p-8 text-center mb-6">
+            <div className="rounded-[8px] border border-dashed border-[#2a2a2a] bg-[#0a0a0a] p-6 sm:p-8 text-center mb-6">
               <Lock size={24} className="text-[#4a4a4a] mx-auto mb-3" />
               <p className="text-sm text-[#9ca3af]">
                 Integração Stripe ativa após configurar{" "}
@@ -93,7 +92,6 @@ export default function CheckoutStep3() {
               </p>
             </div>
 
-            {/* Trust signals */}
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2">
                 <Shield size={14} className="text-[#dc2626]" />
@@ -112,7 +110,8 @@ export default function CheckoutStep3() {
             </p>
           )}
 
-          <div className="flex gap-3">
+          {/* Desktop buttons */}
+          <div className="hidden lg:flex gap-3">
             <Button variant="outline" onClick={() => router.back()} className="flex-1" disabled={loading}>
               Voltar
             </Button>
@@ -132,8 +131,8 @@ export default function CheckoutStep3() {
           </div>
         </div>
 
-        {/* Summary */}
-        <div className="lg:col-span-1">
+        {/* Desktop Summary */}
+        <div className="hidden lg:block lg:col-span-1">
           <div className="rounded-[8px] border border-[#1f1f1f] bg-[#111111] p-5 sticky top-24">
             <h2 className="text-sm font-semibold text-white mb-4">Resumo do Pedido</h2>
 
@@ -156,7 +155,7 @@ export default function CheckoutStep3() {
                 <span className="text-[#9ca3af]">Subtotal</span>
                 <PriceDisplay cents={subtotalCents()} className="text-white font-medium" />
               </div>
-                {shipping && (
+              {shipping && (
                 <div className="flex justify-between">
                   <span className="text-[#9ca3af]">{shipping.label.split(" - ")[0]}</span>
                   <PriceDisplay cents={shipping.priceCents} className="text-white font-medium" />
@@ -177,6 +176,41 @@ export default function CheckoutStep3() {
               <span className="font-bold text-white">Total</span>
               <PriceDisplay cents={total} className="text-xl font-bold text-white" />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile sticky bottom bar */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[#0a0a0a]/96 backdrop-blur-md border-t border-[#1f1f1f] px-4 pt-3"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
+      >
+        <div className="flex items-center gap-3">
+          <div>
+            <p className="text-[10px] text-[#9ca3af] uppercase tracking-wider leading-none mb-0.5">Total</p>
+            <PriceDisplay cents={total} className="text-sm font-bold text-white" />
+          </div>
+          <div className="flex gap-2 flex-1">
+            <Button
+              variant="outline"
+              onClick={() => router.back()}
+              className="h-11 px-4"
+              disabled={loading}
+            >
+              Voltar
+            </Button>
+            <Button
+              onClick={handlePlaceOrder}
+              className="flex-1 h-11 text-sm gap-1.5"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Lock size={14} />
+              )}
+              {loading ? "Processando..." : "Confirmar"}
+            </Button>
           </div>
         </div>
       </div>

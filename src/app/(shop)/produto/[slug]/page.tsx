@@ -111,7 +111,7 @@ export default async function ProductPage({ params }: Props) {
       </nav>
 
       {/* Main grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 lg:gap-14">
         {/* ── Gallery ── */}
         <ProductGallery images={product.images} productName={product.name} />
 

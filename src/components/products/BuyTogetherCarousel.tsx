@@ -94,7 +94,7 @@ export function BuyTogetherCarousel({ productId }: BuyTogetherCarouselProps) {
             <Link
               key={p.id}
               href={`/produto/${p.slug}`}
-              className="group flex-none w-56 rounded-[10px] border border-[#1f1f1f] bg-[#0d0d0d] overflow-hidden hover:border-[#3a3a3a] transition-colors"
+              className="group flex-none w-44 sm:w-56 rounded-[10px] border border-[#1f1f1f] bg-[#0d0d0d] overflow-hidden hover:border-[#3a3a3a] active:border-[#3a3a3a] transition-colors"
             >
               {/* Image */}
               <div className="relative w-full aspect-square bg-[#111] overflow-hidden">

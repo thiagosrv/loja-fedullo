@@ -78,6 +78,10 @@ button, [role="button"], a {
   background-color: var(--color-accent);
 }
 
+/* Hide scrollbar on horizontal scroll containers (mobile carousels) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

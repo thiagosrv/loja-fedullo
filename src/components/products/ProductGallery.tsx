@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 interface ProductImage {
   id: string;
@@ -18,6 +18,22 @@ interface ProductGalleryProps {
 export function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [active, setActive] = useState(0);
   const [zoomed, setZoomed] = useState(false);
+
+  /* Touch swipe */
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 40) {
+      if (dx < 0) next();
+      else prev();
+    }
+    touchStartX.current = null;
+  };
 
   if (images.length === 0) {
     return (
@@ -36,6 +52,8 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
       <div
         className="relative aspect-square rounded-[10px] bg-[#111111] border border-[#1f1f1f] overflow-hidden group cursor-zoom-in"
         onClick={() => setZoomed(true)}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <Image
           src={images[active].url}
@@ -45,47 +63,50 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           priority
           sizes="(max-width: 768px) 100vw, 50vw"
         />
-        {/* Nav arrows */}
+
+        {/* Nav arrows — always visible on mobile, hover-only on desktop */}
         {images.length > 1 && (
           <>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); prev(); }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white
+                         opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
               aria-label="Imagem anterior"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={18} />
             </button>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); next(); }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white
+                         opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-black/80 cursor-pointer"
               aria-label="Próxima imagem"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={18} />
             </button>
           </>
         )}
-        {/* Zoom hint */}
-        <div className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
-          <ZoomIn size={13} />
-        </div>
-        {/* Slide indicator */}
+
+        {/* Dot indicator */}
         {images.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
             {images.map((_, i) => (
-              <span
+              <button
                 key={i}
-                className={`w-1.5 h-1.5 rounded-full transition-colors ${i === active ? "bg-white" : "bg-white/30"}`}
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setActive(i); }}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${i === active ? "bg-white w-3" : "bg-white/40"}`}
+                aria-label={`Imagem ${i + 1}`}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Thumbnails */}
+      {/* Thumbnails — hidden on very small screens, shown from sm */}
       {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="hidden sm:flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {images.map((img, i) => (
             <button
               key={img.id}
@@ -114,7 +135,19 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
           onClick={() => setZoomed(false)}
         >
-          <div className="relative w-full max-w-3xl aspect-square">
+          <div
+            className="relative w-full max-w-3xl aspect-square"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={(e) => {
+              if (touchStartX.current === null) return;
+              const dx = e.changedTouches[0].clientX - touchStartX.current;
+              if (Math.abs(dx) > 40) {
+                if (dx < 0) next();
+                else prev();
+              }
+              touchStartX.current = null;
+            }}
+          >
             <Image
               src={images[active].url}
               alt={images[active].alt ?? productName}
@@ -125,12 +158,33 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           </div>
           <button
             type="button"
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
+            className="absolute top-4 right-4 w-11 h-11 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer"
             onClick={() => setZoomed(false)}
             aria-label="Fechar"
           >
-            ✕
+            <X size={18} />
           </button>
+          {/* Lightbox arrows */}
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); prev(); }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors cursor-pointer"
+                aria-label="Anterior"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); next(); }}
+                className="absolute right-16 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors cursor-pointer"
+                aria-label="Próxima"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

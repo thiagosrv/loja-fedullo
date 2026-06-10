@@ -72,7 +72,9 @@ export function SearchBar() {
           className={cn(
             "absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2",
             "bg-[#111111] border border-[#2a2a2a] rounded-full px-4 py-2",
-            "shadow-lg shadow-black/40 w-64 sm:w-80"
+            "shadow-lg shadow-black/40",
+            /* Clamp width so it never overflows the viewport on narrow screens */
+            "w-[min(20rem,calc(100vw-5rem))]"
           )}
         >
           <Search size={14} strokeWidth={1.6} className="text-[#4a4a4a] flex-shrink-0" />
@@ -81,7 +83,7 @@ export function SearchBar() {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Buscar produtos..."
-            className="flex-1 bg-transparent text-white text-sm placeholder:text-[#4a4a4a] outline-none min-w-0"
+            className="flex-1 bg-transparent text-white text-[16px] sm:text-sm placeholder:text-[#4a4a4a] outline-none min-w-0"
           />
           <button
             type="button"

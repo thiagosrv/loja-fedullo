@@ -94,7 +94,7 @@ export default function ProdutosPage() {
           placeholder="Buscar por nome ou SKU..."
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
-          className="w-full h-10 pl-9 pr-4 rounded-[6px] border border-[#2a2a2a] bg-[#0a0a0a] text-sm text-white placeholder-[#4b5563] focus:outline-none focus:border-[#dc2626] transition-colors max-w-sm"
+          className="w-full h-10 pl-9 pr-4 rounded-[6px] border border-[#2a2a2a] bg-[#0a0a0a] text-[16px] sm:text-sm text-white placeholder-[#4b5563] focus:outline-none focus:border-[#dc2626] transition-colors max-w-sm"
         />
       </div>
 

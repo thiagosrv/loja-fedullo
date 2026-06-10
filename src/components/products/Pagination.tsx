@@ -47,7 +47,7 @@ export function Pagination({ currentPage, totalPages }: Props) {
         disabled={currentPage === 1}
         aria-label="Página anterior"
         className={cn(
-          "flex items-center justify-center w-9 h-9 rounded-[8px] border transition-colors duration-150 cursor-pointer",
+          "flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-[8px] border transition-colors duration-150 cursor-pointer",
           "border-[#1f1f1f] bg-[#0a0a0a] text-[#9ca3af] hover:border-[#2a2a2a] hover:text-white",
           "disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-[#9ca3af] disabled:hover:border-[#1f1f1f]"
         )}
@@ -66,7 +66,7 @@ export function Pagination({ currentPage, totalPages }: Props) {
             onClick={() => goTo(p)}
             aria-current={p === currentPage ? "page" : undefined}
             className={cn(
-              "flex items-center justify-center w-9 h-9 rounded-[8px] border text-sm transition-colors duration-150 cursor-pointer",
+              "flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-[8px] border text-sm transition-colors duration-150 cursor-pointer",
               p === currentPage
                 ? "border-[#dc2626] bg-[#dc2626]/10 text-[#dc2626] font-semibold"
                 : "border-[#1f1f1f] bg-[#0a0a0a] text-[#9ca3af] hover:border-[#2a2a2a] hover:text-white"
@@ -83,7 +83,7 @@ export function Pagination({ currentPage, totalPages }: Props) {
         disabled={currentPage === totalPages}
         aria-label="Próxima página"
         className={cn(
-          "flex items-center justify-center w-9 h-9 rounded-[8px] border transition-colors duration-150 cursor-pointer",
+          "flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-[8px] border transition-colors duration-150 cursor-pointer",
           "border-[#1f1f1f] bg-[#0a0a0a] text-[#9ca3af] hover:border-[#2a2a2a] hover:text-white",
           "disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-[#9ca3af] disabled:hover:border-[#1f1f1f]"
         )}

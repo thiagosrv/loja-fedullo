@@ -105,7 +105,7 @@ export function CouponInput() {
           }}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleApply(); } }}
           placeholder="CÓDIGO DO CUPOM"
-          className="flex-1 bg-[#0a0a0a] border border-[#2a2a2a] rounded-[6px] px-3 py-2.5 text-sm text-white placeholder:text-[#3a3a3a] uppercase tracking-wider outline-none focus:border-[#dc2626]/40 transition-colors"
+          className="flex-1 bg-[#0a0a0a] border border-[#2a2a2a] rounded-[6px] px-3 py-2.5 text-[16px] sm:text-sm text-white placeholder:text-[#3a3a3a] uppercase tracking-wider outline-none focus:border-[#dc2626]/40 transition-colors min-w-0"
         />
         <button
           onClick={handleApply}

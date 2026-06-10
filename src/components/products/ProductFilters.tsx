@@ -34,7 +34,7 @@ export function ProductFilters({ sort, total }: Props) {
       </p>
 
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-[#4a4a4a] font-medium uppercase tracking-wider">Ordenar:</span>
+        <span className="text-xs text-[#4a4a4a] font-medium uppercase tracking-wider hidden sm:inline">Ordenar:</span>
         {SORT_OPTIONS.map((opt) => (
           <button
             key={opt.value}

@@ -119,16 +119,16 @@ export function HeroBanner() {
         </p>
 
         {/* CTA */}
-        <div ref={ctaRef} className="flex flex-col sm:flex-row items-center gap-3">
+        <div ref={ctaRef} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto max-w-xs sm:max-w-none">
           <Link
             href="/chicotes"
-            className="inline-flex items-center justify-center h-11 px-8 rounded-[8px] bg-[#dc2626] text-white text-sm font-semibold tracking-wide hover:bg-[#b91c1c] transition-colors duration-200"
+            className="inline-flex items-center justify-center h-12 sm:h-11 px-8 rounded-[8px] bg-[#dc2626] text-white text-sm font-semibold tracking-wide hover:bg-[#b91c1c] active:bg-[#b91c1c] transition-colors duration-200"
           >
             Explorar Produtos
           </Link>
           <Link
             href="/marcas"
-            className="inline-flex items-center justify-center h-11 px-8 rounded-[8px] border border-white/10 text-white/60 text-sm font-medium tracking-wide hover:border-white/25 hover:text-white/90 transition-colors duration-200"
+            className="inline-flex items-center justify-center h-12 sm:h-11 px-8 rounded-[8px] border border-white/10 text-white/60 text-sm font-medium tracking-wide hover:border-white/25 hover:text-white/90 active:border-white/25 active:text-white/90 transition-colors duration-200"
           >
             Por Marca
           </Link>
