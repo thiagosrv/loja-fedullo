@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, User, LogIn } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Menu, X, User, LogIn, Search } from "lucide-react";
 import { CATEGORIES } from "@/constants/categories";
 import { CAR_BRANDS } from "@/constants/brands";
 import { cn } from "@/lib/utils";
@@ -11,7 +12,18 @@ import { useAuth } from "@/context/AuthContext";
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const [brandsOpen, setBrandsOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const { user, signOut } = useAuth();
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchValue.trim();
+    if (!q) return;
+    router.push(`/busca?q=${encodeURIComponent(q)}`);
+    setSearchValue("");
+    close();
+  };
 
   /* Trava o scroll da página enquanto o drawer está aberto */
   useEffect(() => {
@@ -68,6 +80,19 @@ export function MobileMenu() {
 
         {/* Red accent line */}
         <div className="h-px bg-[#dc2626]" />
+
+        {/* Search */}
+        <div className="px-4 pt-4">
+          <form onSubmit={handleSearch} className="flex items-center gap-2 bg-[#0a0a0a] border border-[#1f1f1f] rounded-[8px] px-3 py-2.5">
+            <Search size={14} className="text-[#4a4a4a] flex-shrink-0" />
+            <input
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Buscar produtos..."
+              className="flex-1 bg-transparent text-sm text-white placeholder:text-[#4a4a4a] outline-none"
+            />
+          </form>
+        </div>
 
         <nav className="flex flex-col p-4 gap-1">
           {CATEGORIES.map((cat) => (

@@ -10,6 +10,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useCheckoutStore } from "@/store/checkoutStore";
 import { Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CouponInput } from "@/components/checkout/CouponInput";
 
 export default function CheckoutStep1() {
   const router = useRouter();
@@ -175,6 +176,9 @@ export default function CheckoutStep1() {
               </div>
             </div>
           </div>
+
+          {/* Coupon */}
+          <CouponInput />
 
           {formError && (
             <p className="text-sm text-[#dc2626] text-center">{formError}</p>

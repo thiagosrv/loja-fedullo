@@ -23,12 +23,22 @@ export interface SelectedShipping {
   region: string;
 }
 
+export interface AppliedCoupon {
+  code: string;
+  type: "PERCENTAGE" | "FIXED";
+  value: number;
+  description?: string | null;
+  discountCents: number;
+}
+
 interface CheckoutState {
   address: Partial<CheckoutAddress>;
   shipping: SelectedShipping | null;
+  coupon: AppliedCoupon | null;
   orderId: string | null;
   setAddress: (address: Partial<CheckoutAddress>) => void;
   setShipping: (shipping: SelectedShipping) => void;
+  setCoupon: (coupon: AppliedCoupon | null) => void;
   setOrderId: (id: string) => void;
   reset: () => void;
 }
@@ -36,9 +46,11 @@ interface CheckoutState {
 export const useCheckoutStore = create<CheckoutState>()((set) => ({
   address: {},
   shipping: null,
+  coupon: null,
   orderId: null,
   setAddress: (address) => set((s) => ({ address: { ...s.address, ...address } })),
   setShipping: (shipping) => set({ shipping }),
+  setCoupon: (coupon) => set({ coupon }),
   setOrderId: (orderId) => set({ orderId }),
-  reset: () => set({ address: {}, shipping: null, orderId: null }),
+  reset: () => set({ address: {}, shipping: null, coupon: null, orderId: null }),
 }));

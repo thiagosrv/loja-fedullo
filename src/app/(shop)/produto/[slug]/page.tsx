@@ -57,8 +57,45 @@ export default async function ProductPage({ params }: Props) {
     { icon: Zap,          label: "Envio Rápido" },
   ];
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://loja-fedullo.vercel.app";
+  const productUrl = `${baseUrl}/produto/${product.slug}`;
+  const firstImage = product.images?.[0]?.url;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description,
+    sku: product.sku ?? undefined,
+    url: productUrl,
+    ...(firstImage && { image: [firstImage] }),
+    brand: {
+      "@type": "Brand",
+      name: "Fedullo",
+    },
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: "BRL",
+      price: (displayPrice / 100).toFixed(2),
+      availability:
+        product.stock > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      seller: {
+        "@type": "Organization",
+        name: "Fedullo Motorsport",
+      },
+    },
+    category: product.category.name,
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-[#4b5563] mb-8">
         <a href="/" className="hover:text-white transition-colors">Início</a>

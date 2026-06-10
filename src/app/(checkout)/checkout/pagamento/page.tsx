@@ -12,7 +12,7 @@ import { Shield, Lock, Loader2 } from "lucide-react";
 export default function CheckoutStep3() {
   const router = useRouter();
   const { items, subtotalCents, clearCart } = useCartStore();
-  const { address, shipping, setOrderId } = useCheckoutStore();
+  const { address, shipping, coupon, setOrderId } = useCheckoutStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,7 +22,8 @@ export default function CheckoutStep3() {
     }
   }, []);
 
-  const total = subtotalCents() + (shipping?.priceCents ?? 0);
+  const discountCents = coupon?.discountCents ?? 0;
+  const total = subtotalCents() + (shipping?.priceCents ?? 0) - discountCents;
 
   const handlePlaceOrder = async () => {
     setLoading(true);
@@ -43,6 +44,8 @@ export default function CheckoutStep3() {
           subtotalCents: subtotalCents(),
           shippingCents: shipping!.priceCents,
           totalCents: total,
+          discountCents,
+          couponCode: coupon?.code ?? null,
           guestEmail: address.email,
         }),
       });
@@ -153,10 +156,18 @@ export default function CheckoutStep3() {
                 <span className="text-[#9ca3af]">Subtotal</span>
                 <PriceDisplay cents={subtotalCents()} className="text-white font-medium" />
               </div>
-              {shipping && (
+                {shipping && (
                 <div className="flex justify-between">
                   <span className="text-[#9ca3af]">{shipping.label.split(" - ")[0]}</span>
                   <PriceDisplay cents={shipping.priceCents} className="text-white font-medium" />
+                </div>
+              )}
+              {coupon && (
+                <div className="flex justify-between">
+                  <span className="text-green-400 text-xs">Cupom {coupon.code}</span>
+                  <span className="text-green-400 font-medium text-sm">
+                    −<PriceDisplay cents={coupon.discountCents} className="inline" />
+                  </span>
                 </div>
               )}
             </div>

@@ -9,6 +9,7 @@ import { MobileMenu } from "./MobileMenu";
 import { CATEGORIES } from "@/constants/categories";
 import { ShoppingBag } from "lucide-react";
 import { UserMenu } from "./UserMenu";
+import { SearchBar } from "./SearchBar";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -140,6 +141,7 @@ export function Header() {
 
         {/* Right actions */}
         <div className="flex items-center gap-1">
+          <SearchBar />
           <UserMenu />
 
           {/* Cart */}
