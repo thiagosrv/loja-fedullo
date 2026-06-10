@@ -1,6 +1,14 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
+// Fail loud so Vercel logs show the real cause
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "[db] DATABASE_URL environment variable is not set. " +
+    "Add it in Vercel → Settings → Environment Variables."
+  );
+}
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
@@ -10,7 +18,7 @@ function createPrismaClient() {
 
   const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL!,
-    // Supabase exige SSL em produção; max:1 evita esgotar conexões no serverless
+    // Supabase requires SSL in production; max:1 avoids exhausting connections in serverless
     ssl: isProduction ? { rejectUnauthorized: false } : false,
     max: isProduction ? 1 : 5,
   });
