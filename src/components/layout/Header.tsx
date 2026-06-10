@@ -89,13 +89,16 @@ export function Header() {
       ref={headerRef}
       className="fixed top-0 left-0 right-0 z-40 h-[52px]"
     >
-      {/* Blurred background layer — shown on scroll */}
+      {/* Solid background — always visible on mobile so hamburger/logo are always readable */}
+      <div className="absolute inset-0 pointer-events-none md:hidden bg-[#000000]" />
+
+      {/* Blurred background layer — shown on scroll (desktop) */}
       <div
         ref={bgRef}
         className="absolute inset-0 pointer-events-none"
         style={{
           opacity: 0,
-          background: "rgba(0,0,0,0.78)",
+          background: "rgba(0,0,0,0.82)",
           backdropFilter: "blur(22px) saturate(180%)",
           WebkitBackdropFilter: "blur(22px) saturate(180%)",
         }}
@@ -113,7 +116,7 @@ export function Header() {
         <Link
           ref={logoRef}
           href="/"
-          className="flex-shrink-0 flex flex-col items-start gap-[3px] group"
+          className="flex-shrink-0 flex flex-col items-start gap-[3px] group relative z-10"
         >
           <Image
             src="/fedullo.png"

@@ -62,9 +62,10 @@ export function MobileMenu() {
       {/* Drawer — full-height flex column */}
       <div
         className={cn(
-          "fixed top-0 left-0 h-full w-[280px] bg-[#111111] border-r border-[#1f1f1f] z-50 flex flex-col transition-transform duration-300",
+          "fixed top-0 left-0 h-full w-[280px] bg-[#111111] border-r border-[#1a1a1a] z-50 flex flex-col transition-transform duration-300 isolate",
           open ? "translate-x-0" : "-translate-x-full"
         )}
+        style={{ boxShadow: "4px 0 32px rgba(0,0,0,0.6)" }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#1f1f1f] flex-shrink-0">

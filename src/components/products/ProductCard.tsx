@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PriceDisplay } from "@/components/shared/PriceDisplay";
 import { Badge } from "@/components/ui/Badge";
+import { formatBRL } from "@/lib/currency";
 import type { Product } from "@/types/product";
 
 interface ProductCardProps {
@@ -86,11 +87,27 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {/* Price */}
-        <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#1f1f1f]">
-          <PriceDisplay cents={product.price} className="text-base font-bold text-white" />
+        {/* Price + stock badge — stacked to avoid overlap on narrow cards */}
+        <div className="mt-2 pt-2 border-t border-[#1f1f1f] flex flex-col gap-0.5">
+          <div className="flex items-baseline gap-1.5 flex-wrap min-w-0">
+            {product.onSale && product.salePrice ? (
+              <>
+                <PriceDisplay
+                  cents={product.salePrice}
+                  className="text-base font-bold text-[#dc2626]"
+                />
+                <span className="text-xs text-[#4b5563] line-through tabular-nums leading-none">
+                  {formatBRL(product.price)}
+                </span>
+              </>
+            ) : (
+              <PriceDisplay cents={product.price} className="text-base font-bold text-white" />
+            )}
+          </div>
           {product.stock > 0 && product.stock <= 5 && (
-            <span className="text-xs text-[#dc2626]">Últimas {product.stock}</span>
+            <span className="text-[11px] leading-none text-[#dc2626]">
+              Últimas {product.stock} unid.
+            </span>
           )}
         </div>
       </div>

@@ -133,8 +133,10 @@ export function BuyTogetherCarousel({ productId }: BuyTogetherCarouselProps) {
                 <p className="text-sm font-medium text-white leading-snug line-clamp-2 group-hover:text-[#f3f4f6] transition-colors">
                   {p.name}
                 </p>
-                <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="text-base font-bold text-white">{formatPrice(displayPrice)}</span>
+                <div className="mt-2 flex items-baseline gap-1.5 flex-wrap">
+                  <span className={`text-base font-bold ${p.onSale && p.salePrice ? "text-[#dc2626]" : "text-white"}`}>
+                    {formatPrice(displayPrice)}
+                  </span>
                   {p.onSale && p.salePrice && (
                     <span className="text-xs text-[#4b5563] line-through">{formatPrice(p.price)}</span>
                   )}
