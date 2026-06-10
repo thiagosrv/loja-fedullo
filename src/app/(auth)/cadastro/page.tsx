@@ -60,6 +60,8 @@ export default function CadastroPage() {
     if (authError) {
       if (authError.message.includes("already registered")) {
         setError("Este e-mail já está cadastrado. Tente entrar.");
+      } else if (authError.message.toLowerCase().includes("signup") && authError.message.toLowerCase().includes("disabled")) {
+        setError("Cadastro temporariamente indisponível. Tente novamente em instantes.");
       } else {
         setError(authError.message);
       }
